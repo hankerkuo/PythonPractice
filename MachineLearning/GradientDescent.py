@@ -10,6 +10,18 @@ def error_rate(error_times, sample_number):
 
 error = 0
 (X, y) = make_blobs(n_samples = 1000, n_features = 2, centers = 2, cluster_std = 1.3, random_state = 20)
+'''
+This make_blobs will produce a matrix X like this:
+ [X1.feature(1) X1.feature(2)
+      ...           ...
+  Xm.feature(1) Xm.feature(2)]
+  
+ And also produce a matrix y like this:
+ [y1
+  ..
+  ym]
+  where y is made for every sample 1~m, y has value of either 1 or 0 
+'''
 m = np.shape(X)[0]
 n = np.shape(X)[1]
 #np.shape returns a array (a, b) that describe the element number in a numpyarray's first and second axis
@@ -17,9 +29,9 @@ n = np.shape(X)[1]
 X = np.c_[np.ones((m, 1)), X]
 #This method is to put a X0 in every sample, X is a m * (n+1) matrix
 
-W = np.random.rand(1,n+1) * 5
+W = np.random.rand(1, n+1) * 5
 #generate a 1 * (n+1) matrix , n is the feature number of X
-Cost_Function = np.zeros((m,1))
+Cost_Function = np.zeros((m, 1))
 
 
 for i in range(1000):
