@@ -5,24 +5,64 @@ import argparse
 
 def sigmoid_transition(x):
     return 1/(1+np.exp(-x))
+def error_rate(error_times, sample_number):
+    return error_times / sample_number * 100
 
-(X, y) = make_blobs(n_samples = 10, n_features = 2, centers = 2, cluster_std = 2, random_state = 30)
+error = 0
+(X, y) = make_blobs(n_samples = 1000, n_features = 2, centers = 2, cluster_std = 1.3, random_state = 20)
+m = np.shape(X)[0]
+n = np.shape(X)[1]
 #np.shape returns a array (a, b) that describe the element number in a numpyarray's first and second axis
-#This method is to put a X0 in every sample
-# X is a 10 x 3(by 2+1) matrix
-X = np.c_[np.ones((np.shape(X)[0], 1)), X]
-#generate a 1 x np.shape(X)[1] matrix , np.shape(X)[1] is the feature number of X
-W = np.random.rand(1,np.shape(X)[1]) * 5
-#regression line , it is a 10 x 1 matrix
-H_OF_X = np.dot(X, W.T)
-H_OF_X = sigmoid_transition(H_OF_X)
-#Cost function of a logistic regression
-Cost_Function = np.dot(y,np.log(H_OF_X)) + np.dot((1-y), np.log(1-H_OF_X))
 
-a = 0.01
-gradient =
-print(y)
-print(Cost_Function)
+X = np.c_[np.ones((m, 1)), X]
+#This method is to put a X0 in every sample, X is a m * (n+1) matrix
+
+W = np.random.rand(1,n+1) * 5
+#generate a 1 * (n+1) matrix , n is the feature number of X
+Cost_Function = np.zeros((m,1))
 
 
-# 10 2 2 20 10 2
+for i in range(1000):
+    H_OF_X = np.dot(X, W.T)
+    H_OF_X = sigmoid_transition(H_OF_X)
+    # regression line , it is a 10 x 1 matrix
+
+    a = 0.5
+    gradient = (1 / m) * np.dot((H_OF_X.T - y), X)
+    W = W - a * gradient
+    Cost_Function_previous = Cost_Function
+    Cost_Function = np.dot(y, np.log(H_OF_X)) + np.dot((1 - y), np.log(1 - H_OF_X))
+    # Cost function of a logistic regression , which is used to see the cost changing condition during learning
+
+    Cost_ChangingRate = (Cost_Function_previous - Cost_Function)/Cost_Function.sum()
+    print("For logistic regression",i ,"times, Costfuction redced to",Cost_Function)
+    '''
+    if Cost_ChangingRate.sum() < 0.00001 and Cost_ChangingRate.sum() > -0.00001:
+        break
+    '''
+
+(L, k) = make_blobs(n_samples = 1000, n_features = 2, centers = 2, cluster_std = 1.3, random_state = 20)
+m = np.shape(L)[0]
+n = np.shape(L)[1]
+#np.shape returns a array (a, b) that describe the element number in a numpyarray's first and second axis
+
+L = np.c_[np.ones((m, 1)), L]
+#This method is to put a L0 in every sample, L is a m * (n+1) matrix
+
+print("New data has been produced, Start to predict:")
+for j in range(m):
+    H_OF_L = np.dot(W, L.T[:,j])
+    H_OF_L = sigmoid_transition(H_OF_L)
+    if H_OF_L >= 0.5:
+        Predicting_Result = 1
+    else:
+        Predicting_Result = 0
+    if Predicting_Result != k[j]:
+        error += 1
+    print("Sample no.",j,"Predicted output:",Predicting_Result,"real output:",k[j])
+#For predicting the sample output, first produce a same sample list as X
+
+print("accurate rate goes to:",100-error_rate(error, m),"%")
+print("error rate goes to:",error_rate(error, m),"%")
+#print out the rate of accuracy
+
