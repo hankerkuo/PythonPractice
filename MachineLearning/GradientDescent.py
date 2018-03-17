@@ -34,7 +34,7 @@ W = np.random.rand(1, n+1) * 5
 Cost_Function = np.zeros((m, 1))
 
 
-for i in range(1000):
+for i in range(100000):
     H_OF_X = np.dot(X, W.T)
     H_OF_X = sigmoid_transition(H_OF_X)
     # regression line , it is a 10 x 1 matrix
