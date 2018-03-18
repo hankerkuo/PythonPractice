@@ -35,7 +35,7 @@ color = np.c_[np.ones((m, 1)), color]
 
 for _ in range(6):
     #print("everage blue color = {:.0f}".format(color[_]))
-    print("everage blue color = ", np.ceil(color[_]))
+    print("average blue color = ", np.ceil(color[_]))
 # start to access the BGR information , in openCV, image is loaded in order: B>G>R (0>1>2)
 for i in range(0, 5):
     for j in range(0, 6):
