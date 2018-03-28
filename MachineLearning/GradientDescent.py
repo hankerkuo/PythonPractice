@@ -9,7 +9,7 @@ def error_rate(error_times, sample_number):
     return error_times / sample_number * 100
 
 error = 0
-(X, y) = make_blobs(n_samples = 1000, n_features = 2, centers = 2, cluster_std = 1.3, random_state = 20)
+(X, y) = make_blobs(n_samples = 100000, n_features = 2, centers = 2, cluster_std = 1.3, random_state = 20)
 '''
 This make_blobs will produce a matrix X like this:
  [X1.feature(1) X1.feature(2)
@@ -34,16 +34,16 @@ W = np.random.rand(1, n+1) * 5
 Cost_Function = np.zeros((m, 1))
 
 
-for i in range(100000):
+for i in range(10000):
     H_OF_X = np.dot(X, W.T)
     H_OF_X = sigmoid_transition(H_OF_X)
-    # regression line , it is a 10 x 1 matrix
+    # regression line , it is a m x 1 matrix
 
-    a = 0.5
+    a = 0.05
     gradient = (1 / m) * np.dot((H_OF_X.T - y), X)
     W = W - a * gradient
     Cost_Function_previous = Cost_Function
-    Cost_Function = np.dot(y, np.log(H_OF_X)) + np.dot((1 - y), np.log(1 - H_OF_X))
+    Cost_Function = - np.dot(y, np.log(H_OF_X)) - np.dot((1 - y), np.log(1 - H_OF_X))
     # Cost function of a logistic regression , which is used to see the cost changing condition during learning
 
     Cost_ChangingRate = (Cost_Function_previous - Cost_Function)/Cost_Function.sum()
