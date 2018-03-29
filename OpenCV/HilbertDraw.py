@@ -50,7 +50,7 @@ def Hilbert(Index, N):
 '''
 Main function begins
 '''
-N = 8
+N = 64
 img = np.zeros((900, 900, 3), np.uint8)
 for i in range(N*N-1):
     cv2.line(img,(Hilbert(i,N)[0]*int(900/N),Hilbert(i,N)[1]*int(900/N)),
