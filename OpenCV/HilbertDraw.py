@@ -10,13 +10,13 @@ my basic 2X2 unit
 01 10
 00 11   input : 00, output : 11
 '''
-def X_Coordinate(x):
+def X_Coordinate_Hilbert(x):
     if x & 2 == 0:      #x binary and 10 == 00
         return 0
     elif x & 2 == 2:    #x binary and 10 == 10
         return 1
 
-def y_Coordinate(y):
+def y_Coordinate_Hilbert(y):
     if y & 2 == 0:      #y binary and 10 == 00
         return y & 1    #y binary and 01
     elif y & 2 == 2:    #y binary and 10 == 10
@@ -26,8 +26,8 @@ Hilbert function gives the corresponding coordinate of Index , N is the size of 
 '''
 def Hilbert(Index, N):
     count = Index
-    x = X_Coordinate(LastTwoDigit(Index))
-    y = y_Coordinate(LastTwoDigit(Index))
+    x = X_Coordinate_Hilbert(LastTwoDigit(Index))
+    y = y_Coordinate_Hilbert(LastTwoDigit(Index))
     Index = Index >> 2
     i = 4
     while(i <= N):

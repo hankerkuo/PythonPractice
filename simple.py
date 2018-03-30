@@ -1,5 +1,5 @@
 import numpy as np
-
-for i in range(8):
-    print(i&3)
+a = (1, 2)
+b = (3, 4)
+print(np.sum(a+b))
 #(2L, 4L)

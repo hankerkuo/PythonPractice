@@ -10,21 +10,21 @@ my basic 2X2 unit
 01 11
 00 10   input : 00, output : 11
 '''
-def X_Coordinate(x):
+def X_Coordinate_N_Order(x):
     if x & 2 == 0:      #x binary and 10 == 00
         return 0
     elif x & 2 == 2:    #x binary and 10 == 10
         return 1
 
-def y_Coordinate(y):
+def y_Coordinate_N_Order(y):
     return y & 1        #x binary and 01
 '''
 N_Order function gives the corresponding coordinate of Index , N is the size of N_Order curve
 '''
 def N_Order(Index, N):
     count = Index
-    x = X_Coordinate(LastTwoDigit(Index))
-    y = y_Coordinate(LastTwoDigit(Index))
+    x = X_Coordinate_N_Order(LastTwoDigit(Index))
+    y = y_Coordinate_N_Order(LastTwoDigit(Index))
     Index = Index >> 2
     i = 4
     while(i <= N):
