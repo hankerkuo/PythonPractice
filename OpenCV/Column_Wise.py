@@ -6,13 +6,20 @@ ColumnWise function gives the corresponding coordinate of Index. M, N refer to t
 def ColumnWise(Index, M, N):
     if Index > M * N - 1:
         print('WARNNING : Index is out of range, Index :', Index, 'Expected Maximum Index :', M * N -1)
-    x = np.floor(Index / M)
-    if x % 2 == 0:
+    x = np.floor(Index / M)             #decide the x coordinate
+    if x % 2 == 0:                      #if the x coordinate is even, which means odd column
         y = Index % M
-    elif x % 2 == 1:
+    elif x % 2 == 1:                    #if the x coordinate is odd, which means even column
         y = M - (Index % M) - 1
     x, y = map(int, (x, y))
     return x, y
+def ColumnWise_Coordinate_to_Index(x, y, M, N):
+    Index = 0
+    if x % 2 == 0:                      #if the x coordinate is even, which means odd column
+        Index = M * x + y
+    elif x % 2 == 1:                    #if the x coordinate is odd, which means even column
+        Index = M * (x + 1) + (M - y)
+
 '''
 Main function begins, Beware of M can not be 1 here, which will make the curve a straight line
 '''

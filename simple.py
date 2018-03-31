@@ -116,6 +116,21 @@ def N_Order_Coordinate_to_Index(x, y, N):
                 y = y - N / 2
         N /= 2
     return int(Index)
-
-print(Hilbert_Coordinate_to_Index(0, 5, 8))
-print(Hilbert(Hilbert_Coordinate_to_Index(12, 12, 16), 16))
+def ColumnWise_Coordinate_to_Index(x, y, M, N):
+    Index = 0
+    if x % 2 == 0:                      #if the x coordinate is even, which means odd column
+        Index = M * x + y
+    elif x % 2 == 1:                    #if the x coordinate is odd, which means even column
+        Index = M * (x + 1) + (M - y)
+    return int(Index)
+def ColumnWise(Index, M, N):
+    if Index > M * N - 1:
+        print('WARNNING : Index is out of range, Index :', Index, 'Expected Maximum Index :', M * N -1)
+    x = np.floor(Index / M)             #decide the x coordinate
+    if x % 2 == 0:                      #if the x coordinate is even, which means odd column
+        y = Index % M
+    elif x % 2 == 1:                    #if the x coordinate is odd, which means even column
+        y = M - (Index % M) - 1
+    x, y = map(int, (x, y))
+    return x, y
+print(ColumnWise(ColumnWise_Coordinate_to_Index(12, 8, 16, 16), 16, 16))
