@@ -23,10 +23,14 @@ N_Order function gives the corresponding coordinate of Index , N is the size of 
 '''
 def N_Order(Index, N):
     count = Index
+    '''
+    Old version, if use this code, i should begin with value 4
     x = X_Coordinate_N_Order(LastTwoDigit(Index))
     y = y_Coordinate_N_Order(LastTwoDigit(Index))
     Index = Index >> 2
-    i = 4
+    '''
+    x, y = (0, 0)
+    i = 2
     while(i <= N):
         Half_Of_N = i / 2
         Case = LastTwoDigit(Index)
@@ -44,7 +48,31 @@ def N_Order(Index, N):
     #print("node", count,"x:", x,"y:", y)
     x, y = map(int, (x, y))
     return x, y
-
+'''
+N_Order_Coordinate_to_Index function gives the corresponding Index of coordinate, N is the size of N_Order curve
+'''
+def N_Order_Coordinate_to_Index(x, y, N):
+    Index = 0
+    while(N >= 2):
+        Half_N = N / 2
+        Cur_corr_x = 2 ** (2 * np.log2(N) - 1)
+        Cur_corr_y = 2 ** (2 * np.log2(N) - 2)
+        if x < Half_N:
+            if y < Half_N:
+                Index = Index + Cur_corr_x * 0 + Cur_corr_y * 0
+            elif y >= Half_N and y <= N - 1:
+                Index = Index + Cur_corr_x * 0 + Cur_corr_y * 1
+                y = y - Half_N
+        elif x >= Half_N and x <= N - 1:
+            if y < Half_N:
+                Index = Index + Cur_corr_x * 1 + Cur_corr_y * 0
+                x = x - Half_N
+            elif y >= Half_N and y <= N - 1:
+                Index = Index + Cur_corr_x * 1 + Cur_corr_y * 1
+                x = x - Half_N
+                y = y - Half_N
+        N /= 2
+    return int(Index)
 '''
 Main function begins
 '''

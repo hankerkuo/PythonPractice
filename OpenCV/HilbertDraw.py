@@ -26,10 +26,14 @@ Hilbert function gives the corresponding coordinate of Index , N is the size of 
 '''
 def Hilbert(Index, N):
     count = Index
+    '''
+    Old version, if use this code, i should begin with value 4
     x = X_Coordinate_Hilbert(LastTwoDigit(Index))
     y = y_Coordinate_Hilbert(LastTwoDigit(Index))
     Index = Index >> 2
-    i = 4
+    '''
+    x, y = (0, 0)
+    i = 2
     while(i <= N):
         Half_Of_N = i / 2
         Case = LastTwoDigit(Index)
@@ -51,6 +55,43 @@ def Hilbert(Index, N):
     #print("node", count,"x:", x,"y:", y)
     x, y = map(int, (x, y))
     return x, y
+'''
+Hilbert_Coordinate_to_Index function gives the corresponding Index of coordinate, N is the size of Hilbert curve
+'''
+def Hilbert_Coordinate_to_Index(x, y, N):
+    Index = 0
+    while(N >= 2):
+        Half_Of_N = N / 2
+        Cur_corr_x = 2 ** (2 * np.log2(N) - 1)
+        Cur_corr_y = 2 ** (2 * np.log2(N) - 2)
+        if x < Half_Of_N:
+            if y < Half_Of_N:
+                Index = Index + Cur_corr_x * 0 + Cur_corr_y * 0
+                t = x
+                x = y
+                y = t
+                N /= 2
+                continue
+            elif y >= Half_Of_N and y <= N - 1:
+                Index = Index + Cur_corr_x * 0 + Cur_corr_y * 1
+                y = y - Half_Of_N
+                N /= 2
+                continue
+        elif x >= Half_Of_N and x <= N-1:
+            if y >= Half_Of_N and y <= N - 1:
+                Index = Index + Cur_corr_x * 1 + Cur_corr_y * 0
+                x = x - Half_Of_N
+                y = y - Half_Of_N
+                N /= 2
+                continue
+            elif y < Half_Of_N:
+                Index = Index + Cur_corr_x * 1 + Cur_corr_y * 1
+                t = y
+                y = -x + (Half_Of_N - 1) + Half_Of_N
+                x = -t + (Half_Of_N - 1)
+                N /= 2
+                continue
+    return int(Index)
 
 '''
 Main function begins
