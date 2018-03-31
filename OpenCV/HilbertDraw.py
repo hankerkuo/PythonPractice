@@ -103,7 +103,7 @@ for j in range(N*N-1):
     print('node', j, 'x:', Hilbert(j, N)[0], 'y:', Hilbert(j, N)[1])
     Start_x, Start_y = map(lambda x : x * Siz_Fix, Hilbert(j, N))
     End_x, End_y = map(lambda x : x * Siz_Fix, Hilbert(j + 1, N))
-    cv2.line(img, (Start_x, Start_y), (End_x, End_y), (0, 140, 255), 3)
+    cv2.line(img, (Start_x, 900 - Start_y), (End_x, 900 - End_y), (0, 140, 255), 3)
     cv2.imshow('Hilbert', img)
     cv2.waitKey(1)
 cv2.waitKey(0)

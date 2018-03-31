@@ -76,14 +76,14 @@ def N_Order_Coordinate_to_Index(x, y, N):
 '''
 Main function begins
 '''
-N = 128
+N = 64
 img = np.zeros((900, 900, 3), np.uint8) + 255   #make an empty image, the part "+255" is to make it white (original one is black)
 Siz_Fix = int(900/N)                            #let the N_Order curve fit the image size 900 * 900
 for j in range(N * N - 1):
     print('node', j, 'x:', N_Order(j, N)[0], 'y:', N_Order(j, N)[1])
     Start_x, Start_y = map(lambda x : x * Siz_Fix, N_Order(j, N))
     End_x, End_y = map(lambda x : x * Siz_Fix, N_Order(j + 1, N))
-    cv2.line(img, (Start_x, Start_y), (End_x, End_y), (0, 140, 255), 2)
+    cv2.line(img, (Start_x, 900 - Start_y), (End_x, 900 - End_y), (0, 140, 255), 2)
     cv2.imshow('N_Order', img)
     cv2.waitKey(1)
 cv2.waitKey(0)

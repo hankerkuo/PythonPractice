@@ -21,7 +21,7 @@ def ColumnWise_Coordinate_to_Index(x, y, M, N):
         Index = M * (x + 1) + (M - y)
 
 '''
-Main function begins, Beware of M can not be 1 here, which will make the curve a straight line
+Main function begins, Beware of M cannot be 1 here, which will make the curve a straight line
 '''
 M = 2
 N = 30
