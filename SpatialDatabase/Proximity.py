@@ -165,7 +165,7 @@ def Find_grid(x, y, x_MAX, y_MAX, SideLength_Of_GridSize):
 First part - Determine the 2D data distance LLS in the order of 1D data index 
 '''
 N = 2
-while (N <= 2**0):                          #The power part means the loop times we want to iterate, '0' means there's no loop
+while (N <= 2**7):                          #The power part means the loop times we want to iterate, '0' means there's no loop
     LSS_ColumnWise = 0
     LSS_Hilbert = 0
     LSS_N_Order = 0
@@ -176,16 +176,16 @@ while (N <= 2**0):                          #The power part means the loop times
     print('The number', '%2i' % np.log2(N),'LLS in ColunmWise :', '%-10i' % LSS_ColumnWise,
           'Hilbert :', '%-10i' % LSS_Hilbert,
           'N_Order :', '%-10i' % LSS_N_Order,)
-    plt.plot(N, LSS_ColumnWise, 'rv')
-    plt.plot(N, LSS_Hilbert, 'b*')
-    plt.plot(N, LSS_N_Order, 'y*')
+    plt.plot(N, LSS_ColumnWise / (N * N), 'rv')
+    plt.plot(N, LSS_Hilbert / (N * N), 'b*')
+    plt.plot(N, LSS_N_Order / (N * N), 'y*')
     N *= 2
 plt.show()
 '''
 Second part - Determine the 1D data distance LLS in the adjacent n*n square of 2D data
 '''
-N = 2
-while (N <= 2**8):                          #The power part means the loop times we want to iterate, '0' means there's no loop
+N = 2                                                                       #cuver starts at N*N situation
+while (N <= 2**0):                                                          #The power part means the loop times we want to iterate, '0' means there's no loop
     LSS_ColumnWise = 0
     LSS_Hilbert = 0
     LSS_N_Order = 0
@@ -208,7 +208,11 @@ while (N <= 2**8):                          #The power part means the loop times
     print('The number', '%2i' % np.log2(N), 'LLS in ColunmWise :', '%-15i' % LSS_ColumnWise,
           'Hilbert :', '%-15i' % LSS_Hilbert,
           'N_Order :', '%-15i' % LSS_N_Order, )
+    plt.plot(N, LSS_ColumnWise, 'rv')
+    plt.plot(N, LSS_Hilbert, 'b*')
+    plt.plot(N, LSS_N_Order, 'y*')
     N *= 2
+plt.show()
 
 
 
