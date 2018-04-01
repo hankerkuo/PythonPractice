@@ -96,7 +96,7 @@ def Hilbert_Coordinate_to_Index(x, y, N):
 '''
 Main function begins
 '''
-N = 64
+N = 16
 img = np.zeros((900, 900, 3), np.uint8) + 255   #make an empty image, the part "+255" is to make it white (original one is black)
 Siz_Fix = int(900/N)                            #let the Hilbert curve fit the image size 900 * 900
 for j in range(N*N-1):

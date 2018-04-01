@@ -121,7 +121,7 @@ def ColumnWise_Coordinate_to_Index(x, y, M, N):
     if x % 2 == 0:                      #if the x coordinate is even, which means odd column
         Index = M * x + y
     elif x % 2 == 1:                    #if the x coordinate is odd, which means even column
-        Index = M * (x + 1) + (M - y)
+        Index = M * x + (M - 1 - y)
     return int(Index)
 def ColumnWise(Index, M, N):
     if Index > M * N - 1:
@@ -133,4 +133,26 @@ def ColumnWise(Index, M, N):
         y = M - (Index % M) - 1
     x, y = map(int, (x, y))
     return x, y
-print(ColumnWise(ColumnWise_Coordinate_to_Index(12, 8, 16, 16), 16, 16))
+
+'''
+Find_grid returns a list of coordinates (el.1 ~ el.8) in 9x9 adjacent range of target coordinate, for example,
+el.6    el.7    el.8
+el.4   Target   el.5
+el.1    el.2    el.3
+'''
+def Find_grid(x, y, x_MAX, y_MAX, SideLength_Of_GridSize):
+    Half_SOG = SideLength_Of_GridSize / 2
+    el = np.array([x, y]) - np.array([np.floor(Half_SOG), np.floor(Half_SOG)])
+    Result_Corr = []
+    for Corr_y in range(0, SideLength_Of_GridSize):
+        for Corr_x in range(0, SideLength_Of_GridSize):
+            curr = el + np.array([Corr_x, Corr_y])
+            curr_x = curr[0]
+            curr_y = curr[1]
+            if x_MAX >= curr_x >= 0 and y_MAX >= curr_y >= 0:
+                Result_Corr.append(list(curr))
+    return Result_Corr
+print(ColumnWise(ColumnWise_Coordinate_to_Index(0, 3, 5, 5), 5, 5))
+'''
+[[1.0, 1.0], [1.0, 2.0], [1.0, 3.0], [2.0, 1.0], [2.0, 2.0], [2.0, 3.0], [3.0, 1.0], [3.0, 2.0], [3.0, 3.0]]
+'''
