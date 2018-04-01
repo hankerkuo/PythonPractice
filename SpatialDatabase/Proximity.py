@@ -134,9 +134,9 @@ ColumnWise_Coordinate_to_Index function gives the corresponding Index of coordin
 '''
 def ColumnWise_Coordinate_to_Index(x, y, M, N):
     Index = 0
-    if x % 2 == 0:                      #if the x coordinate is even, which means odd column
+    if x % 2 == 0:                      # if the x coordinate is even, which means odd column
         Index = M * x + y
-    elif x % 2 == 1:                    #if the x coordinate is odd, which means even column
+    elif x % 2 == 1:                    # if the x coordinate is odd, which means even column
         Index = M * x + (M - 1 - y)
     return int(Index)
 '''
@@ -165,38 +165,38 @@ def Find_grid(x, y, x_MAX, y_MAX, SideLength_Of_GridSize):
 First part - Determine the 2D data distance LLS in the order of 1D data index 
 '''
 N = 2
-while (N <= 2**7):                          #The power part means the loop times we want to iterate, '0' means there's no loop
+while (N <= 2**12):                          #The power part means the loop times we want to iterate, '0' means there's no loop
     LSS_ColumnWise = 0
     LSS_Hilbert = 0
     LSS_N_Order = 0
     for j in range(N * N - 1):
-        LSS_ColumnWise = LSS_ColumnWise + (ColumnWise(j, N, N)[0] - ColumnWise(j + 1, N, N)[0])**2 + (ColumnWise(j, N, N)[1] - ColumnWise(j + 1, N, N)[1])**2
-        LSS_Hilbert = LSS_Hilbert + (Hilbert(j, N)[0] - Hilbert(j + 1, N)[0])**2 + (Hilbert(j, N)[1] - Hilbert(j + 1, N)[1])**2
-        LSS_N_Order = LSS_N_Order + (N_Order(j, N)[0] - N_Order(j + 1, N)[0])**2 + (N_Order(j, N)[1] - N_Order(j + 1, N)[1])**2
-    print('The number', '%2i' % np.log2(N),'LLS in ColunmWise :', '%-10i' % LSS_ColumnWise,
-          'Hilbert :', '%-10i' % LSS_Hilbert,
-          'N_Order :', '%-10i' % LSS_N_Order,)
-    plt.plot(N, LSS_ColumnWise / (N * N), 'rv')
-    plt.plot(N, LSS_Hilbert / (N * N), 'b*')
-    plt.plot(N, LSS_N_Order / (N * N), 'y*')
+        LSS_ColumnWise = LSS_ColumnWise + np.power((ColumnWise(j, N, N)[0] - ColumnWise(j + 1, N, N)[0])**2 + (ColumnWise(j, N, N)[1] - ColumnWise(j + 1, N, N)[1])**2, 0.5)
+        LSS_Hilbert = LSS_Hilbert + np.power((Hilbert(j, N)[0] - Hilbert(j + 1, N)[0])**2 + (Hilbert(j, N)[1] - Hilbert(j + 1, N)[1])**2, 0.5)
+        LSS_N_Order = LSS_N_Order + np.power((N_Order(j, N)[0] - N_Order(j + 1, N)[0])**2 + (N_Order(j, N)[1] - N_Order(j + 1, N)[1])**2, 0.5)
+    print('The number', '%2i' % np.log2(N),'average distance in ColunmWise :', '%-10.2f' % (LSS_ColumnWise / (N * N - 1)),
+          'Hilbert :', '%-10.2f' % (LSS_Hilbert / (N * N - 1)),
+          'N_Order :', '%-10.2f' % (LSS_N_Order / (N * N - 1)))
+    plt.plot(N, LSS_ColumnWise / (N * N - 1), 'rv')
+    plt.plot(N, LSS_Hilbert / (N * N - 1), 'b*')
+    plt.plot(N, LSS_N_Order / (N * N - 1), 'y*')
     N *= 2
 plt.show()
 '''
 Second part - Determine the 1D data distance LLS in the adjacent n*n square of 2D data
 '''
-N = 2                                                                       #cuver starts at N*N situation
-while (N <= 2**0):                                                          #The power part means the loop times we want to iterate, '0' means there's no loop
+N = 2                                                                       # cuver starts at N*N situation
+while (N <= 2**0):                                                          # The power part means the loop times we want to iterate, '0' means there's no loop
     LSS_ColumnWise = 0
     LSS_Hilbert = 0
     LSS_N_Order = 0
-    for y in range(N):                                                      #The 1st and 2nd layer of loop go through all the points in the curver
+    for y in range(N):                                                      # The 1st and 2nd layer of loop go through all the points in the curver
         for x in range(N):
             Adja_Corr = Find_grid(x, y, N - 1, N - 1, 3)
-            Amount = len(Adja_Corr)                                         #
+            Amount = len(Adja_Corr)
             Index_ColumnWise = ColumnWise_Coordinate_to_Index(x, y, N, N)
             Index_Hilbert = Hilbert_Coordinate_to_Index(x, y, N)
             Index_N_Order = N_Order_Coordinate_to_Index(x, y, N)
-            for i in range(Amount):                                         #The 3rd layer of loop is to find all of the adjacent points of the target point
+            for i in range(Amount):                                         # The 3rd layer of loop is to find all of the adjacent points of the target point
                 Corr_x = Adja_Corr[i][0]
                 Corr_y = Adja_Corr[i][1]
                 C_Adja_Corr_Index = ColumnWise_Coordinate_to_Index(Corr_x, Corr_y, N, N)
