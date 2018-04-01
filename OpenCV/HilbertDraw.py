@@ -48,8 +48,8 @@ def Hilbert(Index, N):
             y = y + Half_Of_N
         elif Case == 3:
             t = x
-            x = -y + (Half_Of_N -1) + Half_Of_N
-            y = -t + (Half_Of_N -1)
+            x = -y + (Half_Of_N - 1) + Half_Of_N
+            y = -t + (Half_Of_N - 1)
         Index = Index >> 2
         i *= 2
     #print("node", count,"x:", x,"y:", y)
