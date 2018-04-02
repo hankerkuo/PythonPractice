@@ -1,6 +1,7 @@
 import numpy as np
 import cv2
 import matplotlib.pyplot as plt
+from datetime import datetime
 '''
 estimate the last 2 digit's "binary AND" with 3(Binary: 11)
 '''
@@ -27,7 +28,7 @@ def N_Order(Index, N):
         Index = Index >> 2
         i *= 2
     x, y = map(int, (x, y))
-    return x, y
+    return np.array([x, y])
 '''
 N_Order_Coordinate_to_Index function gives the corresponding Index of coordinate, N is the size of N_Order curve
 '''
@@ -78,7 +79,7 @@ def Hilbert(Index, N):
         Index = Index >> 2
         i *= 2
     x, y = map(int, (x, y))
-    return x, y
+    return np.array([x, y])
 '''
 Hilbert_Coordinate_to_Index function gives the corresponding Index of coordinate, N is the size of Hilbert curve
 '''
@@ -128,7 +129,7 @@ def ColumnWise(Index, M, N):
     elif x % 2 == 1:
         y = M - (Index % M) - 1
     x, y = map(int, (x, y))
-    return x, y
+    return np.array([x, y])
 '''
 ColumnWise_Coordinate_to_Index function gives the corresponding Index of coordinate, M, N refer to the size of a M * N rectangle
 '''
@@ -165,14 +166,15 @@ def Find_grid(x, y, x_MAX, y_MAX, SideLength_Of_GridSize):
 First part - Determine the 2D data distance LLS in the order of 1D data index 
 '''
 N = 2
-while (N <= 2**12):                          #The power part means the loop times we want to iterate, '0' means there's no loop
+while (N <= 2**0):                          #The power part means the loop times we want to iterate, '0' means there's no loop
+    startTime = datetime.now()
     LSS_ColumnWise = 0
     LSS_Hilbert = 0
     LSS_N_Order = 0
     for j in range(N * N - 1):
-        LSS_ColumnWise = LSS_ColumnWise + np.power((ColumnWise(j, N, N)[0] - ColumnWise(j + 1, N, N)[0])**2 + (ColumnWise(j, N, N)[1] - ColumnWise(j + 1, N, N)[1])**2, 0.5)
-        LSS_Hilbert = LSS_Hilbert + np.power((Hilbert(j, N)[0] - Hilbert(j + 1, N)[0])**2 + (Hilbert(j, N)[1] - Hilbert(j + 1, N)[1])**2, 0.5)
-        LSS_N_Order = LSS_N_Order + np.power((N_Order(j, N)[0] - N_Order(j + 1, N)[0])**2 + (N_Order(j, N)[1] - N_Order(j + 1, N)[1])**2, 0.5)
+        LSS_ColumnWise += (np.sum((ColumnWise(j, N, N) - ColumnWise(j + 1, N, N)) ** 2)) ** 0.5
+        LSS_Hilbert += (np.sum((Hilbert(j, N) - Hilbert(j + 1, N)) ** 2)) ** 0.5
+        LSS_N_Order += (np.sum((N_Order(j, N) - N_Order(j + 1, N)) ** 2)) ** 0.5
     print('The number', '%2i' % np.log2(N),'average distance in ColunmWise :', '%-10.2f' % (LSS_ColumnWise / (N * N - 1)),
           'Hilbert :', '%-10.2f' % (LSS_Hilbert / (N * N - 1)),
           'N_Order :', '%-10.2f' % (LSS_N_Order / (N * N - 1)))
@@ -180,12 +182,13 @@ while (N <= 2**12):                          #The power part means the loop time
     plt.plot(N, LSS_Hilbert / (N * N - 1), 'b*')
     plt.plot(N, LSS_N_Order / (N * N - 1), 'y*')
     N *= 2
+    print(datetime.now() - startTime)
 plt.show()
 '''
 Second part - Determine the 1D data distance LLS in the adjacent n*n square of 2D data
 '''
 N = 2                                                                       # cuver starts at N*N situation
-while (N <= 2**0):                                                          # The power part means the loop times we want to iterate, '0' means there's no loop
+while (N <= 2**16):                                                          # The power part means the loop times we want to iterate, '0' means there's no loop
     LSS_ColumnWise = 0
     LSS_Hilbert = 0
     LSS_N_Order = 0
@@ -202,9 +205,9 @@ while (N <= 2**0):                                                          # Th
                 C_Adja_Corr_Index = ColumnWise_Coordinate_to_Index(Corr_x, Corr_y, N, N)
                 H_Adja_Corr_Index = Hilbert_Coordinate_to_Index(Corr_x, Corr_y, N)
                 N_Adja_Corr_Index = N_Order_Coordinate_to_Index(Corr_x, Corr_y, N)
-                LSS_ColumnWise += (Index_ColumnWise - C_Adja_Corr_Index)**2
-                LSS_Hilbert += (Index_Hilbert - H_Adja_Corr_Index)**2
-                LSS_N_Order += (Index_N_Order - N_Adja_Corr_Index)**2
+                LSS_ColumnWise += abs(Index_ColumnWise - C_Adja_Corr_Index)
+                LSS_Hilbert += abs(Index_Hilbert - H_Adja_Corr_Index)
+                LSS_N_Order += abs(Index_N_Order - N_Adja_Corr_Index)
     print('The number', '%2i' % np.log2(N), 'LLS in ColunmWise :', '%-15i' % LSS_ColumnWise,
           'Hilbert :', '%-15i' % LSS_Hilbert,
           'N_Order :', '%-15i' % LSS_N_Order, )
