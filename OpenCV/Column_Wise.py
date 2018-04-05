@@ -26,8 +26,8 @@ def ColumnWise_Coordinate_to_Index(x, y, M, N):
 '''
 Main function begins, Beware of M cannot be 1 here, which will make the curve a straight line
 '''
-M = 2
-N = 5
+M = 32
+N = 32
 if M == 1:
     print('ERROR : M cannot be 1')
 elif M != 1:
@@ -51,6 +51,6 @@ elif M != 1:
         Start to draw line
         '''
         cv2.line(img, (Start_x, 900 - Start_y), (End_x, 900 - End_y), (0, 140, 255), 3)
-        cv2.imshow('N_Order', img)
+        cv2.imshow('Column-wise', img)
         cv2.waitKey(1)
     cv2.waitKey(0)

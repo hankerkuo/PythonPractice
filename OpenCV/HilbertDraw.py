@@ -54,7 +54,7 @@ def Hilbert(Index, N):
         i *= 2
     #print("node", count,"x:", x,"y:", y)
     x, y = map(int, (x, y))
-    return x, y
+    return y, x
 '''
 Hilbert_Coordinate_to_Index function gives the corresponding Index of coordinate, N is the size of Hilbert curve
 '''
@@ -96,7 +96,7 @@ def Hilbert_Coordinate_to_Index(x, y, N):
 '''
 Main function begins
 '''
-N = 16
+N = 32
 img = np.zeros((900, 900, 3), np.uint8) + 255   #make an empty image, the part "+255" is to make it white (original one is black)
 Siz_Fix = int(900/N)                            #let the Hilbert curve fit the image size 900 * 900
 for j in range(N*N-1):

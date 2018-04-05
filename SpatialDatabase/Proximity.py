@@ -11,7 +11,7 @@ def LastTwoDigit(D):
 N_Order function gives the corresponding coordinate of Index , N is the size of N_Order curve
 '''
 def N_Order(Index, N):
-    x, y = (0, 0)
+    x, y = (0, 0        )
     i = 2
     while(i <= N):
         Half_Of_N = i / 2
@@ -178,17 +178,17 @@ while (N <= 2**0):                          #The power part means the loop times
     print('The number', '%2i' % np.log2(N),'average distance in ColunmWise :', '%-10.2f' % (LSS_ColumnWise / (N * N - 1)),
           'Hilbert :', '%-10.2f' % (LSS_Hilbert / (N * N - 1)),
           'N_Order :', '%-10.2f' % (LSS_N_Order / (N * N - 1)))
-    plt.plot(N, LSS_ColumnWise / (N * N - 1), 'rv')
+    plt.plot(N, LSS_ColumnWise / (N * N - 1), 'rs')
     plt.plot(N, LSS_Hilbert / (N * N - 1), 'b*')
-    plt.plot(N, LSS_N_Order / (N * N - 1), 'y*')
+    plt.plot(N, LSS_N_Order / (N * N - 1), 'gx')
     N *= 2
     print(datetime.now() - startTime)
 plt.show()
 '''
-Second part - Determine the 1D data distance LLS in the adjacent n*n square of 2D data
+Second part - Determine the 1D data distance in the adjacent n*n square of 2D data
 '''
 N = 2                                                                       # cuver starts at N*N situation
-while (N <= 2**16):                                                          # The power part means the loop times we want to iterate, '0' means there's no loop
+while (N <= 2**6):                                                          # The power part means the loop times we want to iterate, '0' means there's no loop
     LSS_ColumnWise = 0
     LSS_Hilbert = 0
     LSS_N_Order = 0
@@ -208,12 +208,12 @@ while (N <= 2**16):                                                          # T
                 LSS_ColumnWise += abs(Index_ColumnWise - C_Adja_Corr_Index)
                 LSS_Hilbert += abs(Index_Hilbert - H_Adja_Corr_Index)
                 LSS_N_Order += abs(Index_N_Order - N_Adja_Corr_Index)
-    print('The number', '%2i' % np.log2(N), 'LLS in ColunmWise :', '%-15i' % LSS_ColumnWise,
-          'Hilbert :', '%-15i' % LSS_Hilbert,
-          'N_Order :', '%-15i' % LSS_N_Order, )
-    plt.plot(N, LSS_ColumnWise, 'rv')
-    plt.plot(N, LSS_Hilbert, 'b*')
-    plt.plot(N, LSS_N_Order, 'y*')
+    print('The number', '%2i' % np.log2(N), 'average distance in ColunmWise :', '%-10i' % (LSS_ColumnWise / (N * N)),
+          'Hilbert :', '%-10i' % (LSS_Hilbert / (N * N)),
+          'N_Order :', '%-10i' % (LSS_N_Order / (N * N)))
+    plt.plot(N, LSS_ColumnWise / (N * N), 'rs')
+    plt.plot(N, LSS_Hilbert / (N * N), 'b*')
+    plt.plot(N, LSS_N_Order / (N * N), 'gx')
     N *= 2
 plt.show()
 
