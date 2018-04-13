@@ -1,10 +1,12 @@
-import  numpy as np
-import tensorflow as tf
+import numpy as np
 
-y_data = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
-results = tf.reduce_sum(y_data)
-init = tf.global_variables_initializer()
+scores = np.array([1, 2, 3])
 
-with tf.Session() as sess:
-    sess.run(init)
-    print(sess.run(results))
+def test(*x):
+    return x
+
+
+sequence = test(scores)
+print(sequence)
+for i in sequence:
+    print(i)
