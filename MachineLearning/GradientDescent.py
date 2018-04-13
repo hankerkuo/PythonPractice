@@ -1,4 +1,5 @@
 import numpy as np
+import tensorflow as tf
 from sklearn.datasets.samples_generator import make_blobs
 
 
