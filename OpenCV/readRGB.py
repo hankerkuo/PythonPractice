@@ -1,7 +1,8 @@
 import cv2
 import numpy as np
 from matplotlib import pyplot as plt
-
+# filename = 'pad'
+# img = cv2.imread('%s.jpg' % filename, 1)
 img = cv2.imread('pad.jpg', 1)
 print(img.shape)
 
@@ -47,9 +48,9 @@ for i in range(0, 5):
         print(np.ceil(color/(94 * 94)))
 
 # change into matplolib's order: R>G>B, and display it
-b,g,r = cv2.split(img)
-img = cv2.merge((r,g,b))
-plt.imshow(img, cmap = 'gray', interpolation = 'bicubic')
+b, g, r = cv2.split(img)
+img = cv2.merge((r, g, b))
+plt.imshow(img, cmap='gray', interpolation='bicubic')
 plt.show()
 
 #cv2.imshow('jpg', img)

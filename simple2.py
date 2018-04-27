@@ -1,19 +1,8 @@
-class Account:
-    class win_data:
-        def __init__(self, win, lose):
-            self.win = win
-            self.lose = lose
-            self.winrate = self.win / (self.win + self.lose)
+import numpy as np
 
-        def win_add(self, amount):
-            self.win += amount
-            self.winrate = self.win / (self.win + self.lose)
+p = np.array([[0, 1, -1], [0, 1, 1], [1, 0, 0]])
+a = np.array([[1, 2, 0], [2, 1, 7], [5, 0, -3]])
+p_inverse = np.linalg.inv(p)
 
-        def lose_add(self, amount):
-            self.lose += amount
-            self.winrate = self.win / (self.win + self.lose)
-
-acct = Account.win_data(1, 1)
-acct.win_add(100)
-acct.lose_add(100)
-print(acct.winrate)
+print(np.linalg.eig(a))
+print(np.dot(np.dot(p_inverse, a), p))
