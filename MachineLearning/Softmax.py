@@ -1,8 +1,8 @@
 """Softmax."""
 import numpy as np
-scores = np.array([[1, 2, 3, 6],
-                   [2, 4, 5, 6],
-                   [3, 8, 7, 6]])
+scores = np.array([[10, 2, 3, 6],
+                   [20, 4, 5, 6],
+                   [30, 8, 7, 6]])
 def softmax(x):
     """Compute softmax values for each sets of scores in x."""
     return np.exp(x) / np.sum(np.exp(x), axis=0)
