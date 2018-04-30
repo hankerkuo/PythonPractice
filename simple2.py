@@ -4,24 +4,14 @@ import imageio
 import matplotlib.pyplot as plt
 import pickle
 import shutil
+#
+# W = np.array([['a', 'b'], ['c', 'd']])
+# b = np.array([['x1', '0'], ['x2', '0']])
+# print(W +b)
 
+W = np.array([[1, 2],
+              [3, 4]])
+b = np.array([[0.1],
+              [0.2]])
+print(W + b)
 
-# a = pickle.load(open('C:/OneDrive/文件/NRLab/python project/PythonPractice/pattern recognition/test_data/0.pickle', 'rb'))
-# plt.imshow(a[9], cmap='gray')
-# plt.show()
-# a = os.listdir('C:/data/digits/0/')
-# b = np.random.choice(a, 36, replace=False)
-# c = np.setdiff1d(a, b)
-# print(len(b))
-# print(b)
-# print(c)
-
-def random_take_data(mother_folder, train_num):
-    for kid_folder in os.listdir(mother_folder):
-        for image in os.listdir(mother_folder + kid_folder):
-            print(image)
-# for image in os.listdir('C:/data/digits_all/'):
-#     print(image)
-#     shutil.copy('C:/data/digits_all/' + image, 'C:/data/')
-
-random_take_data('C:/data/digits/', 10)
