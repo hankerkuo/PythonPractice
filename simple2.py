@@ -8,10 +8,14 @@ import shutil
 # W = np.array([['a', 'b'], ['c', 'd']])
 # b = np.array([['x1', '0'], ['x2', '0']])
 # print(W +b)
+#
+# W = np.array([[1, 2],
+#               [3, 4]])
+# b = np.array([[0.1],
+#               [0.2]])
+# print(W + b)
+#
 
-W = np.array([[1, 2],
-              [3, 4]])
-b = np.array([[0.1],
-              [0.2]])
-print(W + b)
+a = np.array([1, 2, 3, 4])
+print(np.shape(a))
 

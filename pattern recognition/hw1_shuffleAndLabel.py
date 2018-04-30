@@ -85,7 +85,7 @@ def shuffle_and_label_binary(folder):
 # this part is the pre_processing part
 
 # random_take_data('C:/data/digits/', 32)
-shuffle_and_label_binary('./train_data/')
+# shuffle_and_label_binary('./train_data/')
 
 # this part is the pre_processing part
 
