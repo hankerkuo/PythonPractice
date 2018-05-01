@@ -35,8 +35,8 @@ te_dat = te_dat.reshape(-1, 18, 18, 1)
 model = Sequential()
 
 # LocallyConv layer 1 output shape (1, 8, 8)
-model.add(LocallyConnected2D(
-    filters=1,
+model.add(Convolution2D(
+    filters=2,
     kernel_size=3,
     strides=2,
     padding='valid',
@@ -50,8 +50,8 @@ model.add(Activation('scaled_hyperbolic_tangent'))
 model.add(ZeroPadding2D(padding=2, data_format='channels_last'))
 
 # Conv layer 2 output shape (1, 4, 4)
-model.add(LocallyConnected2D(
-    filters=1,
+model.add(Convolution2D(
+    filters=4,
     kernel_size=5,
     strides=2,
     padding='valid',

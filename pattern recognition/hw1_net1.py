@@ -9,6 +9,9 @@ from keras import backend as K
 from keras.utils.generic_utils import get_custom_objects
 from keras.utils import np_utils
 from keras.datasets import mnist
+import playsound
+import time
+import os
 
 def scaled_hyperbolic_tangent(x):
     return K.tanh((2 / 3) * x) * 1.7159
@@ -61,7 +64,7 @@ model.compile(optimizer=adam,
 
 print('Training ------------')
 # Another way to train the model
-model.fit(tr_dat, tr_lab, epochs=3000, batch_size=144)
+model.fit(tr_dat, tr_lab, epochs=30, batch_size=1)
 
 print('\nTesting ------------')
 # Evaluate the model with the metrics we defined earlier
@@ -69,4 +72,6 @@ loss, accuracy = model.evaluate(te_dat, te_lab)
 
 print('\ntest loss: ', loss)
 print('\ntest accuracy: ', accuracy)
+
+# playsound.playsound('./endsound/end1.mp3')
 
