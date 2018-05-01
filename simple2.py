@@ -17,5 +17,5 @@ import shutil
 #
 
 a = np.array([1, 2, 3, 4])
-print(np.shape(a))
+print(a[0:3])
 

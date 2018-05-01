@@ -22,14 +22,14 @@ def weight_variable(shape):
     return tf.Variable(initial)
 
 def bias_variable(shape):
-    initial = tf.constant(0.1, shape=shape)
+    initial = tf.constant(0.0, shape=shape)
     return tf.Variable(initial)
 
 def conv2d(x, W):
     # stride [Batch, Height, Width, Channel], in the computer's point if view, it sees just four dimensions
     # so we shouldn't pass through any of samples(batch) or channels
     # Must have strides[0] = strides[3] = 1
-    return tf.nn.conv2d(x, W, strides=[1, 1, 1, 1], padding='SAME')
+    return tf.nn.conv2d(x, W, strides=[1, 2, 2, 1], padding='SAME')
 
 def max_pool_2x2(x):
     # stride [Batch, Height, Width, Channel]
@@ -44,35 +44,31 @@ x_image = tf.reshape(xs, [-1, 16, 16, 1])
 # print(x_image.shape)  # [n_samples, 16,16,1]
 
 ## conv1 layer ##
-W_conv1 = weight_variable([3, 3, 1, 32])  # patch 5x5, in size 1, out size 32
-b_conv1 = bias_variable([32])
-h_conv1 = 1.7159 * tf.nn.tanh((2 / 3) * (conv2d(x_image, W_conv1) + b_conv1))  # output size 16x16x32
-h_pool1 = max_pool_2x2(h_conv1)                           # output size 8x8x32
+W_conv1 = weight_variable([3, 3, 1, 2])  # patch 3x3, in size 1, out size 32
+b_conv1 = bias_variable([8, 8, 2])
+h_conv1 = 1.7159 * tf.nn.tanh((2 / 3) * (conv2d(x_image, W_conv1) + b_conv1))  # output size 8x8x2 (16x16x2 -> 8x8x2)
+# h_pool1 = max_pool_2x2(h_conv1)
 
 ## conv2 layer ##
-W_conv2 = weight_variable([3, 3, 32, 64])  # patch 5x5, in size 32, out size 64
-b_conv2 = bias_variable([64])
-h_conv2 = 1.7159 * tf.nn.tanh((2 / 3) * (conv2d(h_pool1, W_conv2) + b_conv2))  # output size 8x8x64
-h_pool2 = max_pool_2x2(h_conv2)                           # output size 4x4x64
+W_conv2 = weight_variable([5, 5, 2, 4])  # patch 5x5, in size 2, out size 4
+b_conv2 = bias_variable([4, 4, 4])
+h_conv2 = 1.7159 * tf.nn.tanh((2 / 3) * (conv2d(h_conv1, W_conv2) + b_conv2))  # output size 4x4x1 (8x8x2 -> 4x4x4)
+# h_pool2 = max_pool_2x2(h_conv2)
 
 ## fc1 layer ##
-W_fc1 = weight_variable([4*4*64, 1024])
-b_fc1 = bias_variable([1024])
-# [n_samples, 4, 4, 64] ->> [n_samples, 4*4*64]
-h_pool2_flat = tf.reshape(h_pool2, [-1, 4*4*64])
-h_fc1 = 1.7159 * tf.nn.tanh((2 / 3) * (tf.matmul(h_pool2_flat, W_fc1) + b_fc1))
-h_fc1_drop = tf.nn.dropout(h_fc1, keep_prob)
+W_fc1 = weight_variable([4*4*4, 10])
+b_fc1 = bias_variable([10])
+# [n_samples, 4, 4, 4] ->> [n_samples, 4*4*4]
+h_pool2_flat = tf.reshape(h_conv2, [-1, 4*4*4])
+prediction = tf.nn.softmax(tf.matmul(h_pool2_flat, W_fc1) + b_fc1)
+# prediction = 1.7159 * tf.nn.tanh((2 / 3) * (tf.matmul(h_pool2_flat, W_fc1) + b_fc1))
 
-## fc2 layer ##
-W_fc2 = weight_variable([1024, 10])
-b_fc2 = bias_variable([10])
-prediction = tf.nn.softmax(tf.matmul(h_fc1_drop, W_fc2) + b_fc2)
 
 # the error between prediction and real data, two kinds of cost function
 cross_entropy = tf.reduce_mean(-tf.reduce_sum(ys * tf.log(prediction),
                                               reduction_indices=[1]))       # loss
 mse = tf.reduce_mean(0.5 * tf.square(ys - prediction))
-train_step = tf.train.AdamOptimizer(1e-4).minimize(cross_entropy)
+train_step = tf.train.AdamOptimizer(1e-4).minimize(mse)
 
 sess = tf.Session()
 
@@ -116,10 +112,15 @@ for _ in range(160):
     te_dat_after_gaussian_laplace[_, :, :] = ndimage.gaussian_laplace(te_dat[_, :, :], sigma=1)
 
 # training process starts
-for i in range(10000):
-    batch_xs = tr_dat
-    batch_ys = tr_lab
-    sess.run(train_step, feed_dict={xs: batch_xs, ys: batch_ys, keep_prob: 0.5})
-    if i % 50 == 0:
-        print(i, 'th', compute_accuracy(te_dat, te_lab))
+# to divide data set into how many pieces
+batch_number = 3
+for epoch in range(5000):       # epoch amount
+    for batch_index in range(batch_number):
+        start = int(batch_index * (np.shape(tr_dat)[0] / batch_number))
+        end = int(batch_index * (np.shape(tr_dat)[0] / batch_number) + (np.shape(tr_dat)[0] / batch_number))
+        batch_xs = tr_dat[start:end]
+        batch_ys = tr_lab[start:end]
+        sess.run(train_step, feed_dict={xs: batch_xs, ys: batch_ys, keep_prob: 0.5})
+    if epoch % 100 == 0:
+        print(epoch, 'th', compute_accuracy(te_dat, te_lab))
 
