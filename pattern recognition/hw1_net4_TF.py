@@ -10,7 +10,7 @@ def compute_accuracy(v_xs, v_ys):
     y_pre = sess.run(prediction, feed_dict={xs: v_xs})
     correct_prediction = tf.equal(tf.argmax(y_pre, 1), tf.argmax(v_ys, 1))
     accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
-    result = sess.run(accuracy, feed_dict={xs: v_xs, ys: v_ys})
+    result = sess.run(accuracy, feed_dict={xs: v_xs})
     return result
 
 
@@ -20,7 +20,7 @@ def weight_variable(shape):
     if np.shape(shape) == (4,):
         initial = tf.random_uniform(shape, minval=-2.4 / (shape[0] * shape[1]), maxval=2.4 / (shape[0] * shape[1]))
     elif np.shape(shape) == (2,):
-        initial = tf.random_uniform(shape, minval=-2.4 / shape [0], maxval=2.4 / shape[0])
+        initial = tf.random_uniform(shape, minval=-2.4 / shape[0], maxval=2.4 / shape[0])
     return tf.Variable(initial)
 
 
@@ -44,9 +44,9 @@ def max_pool_2x2(x):
 
 # define placeholder for inputs to network
 with tf.name_scope('inputs'):
-    xs = tf.placeholder(tf.float32, [None, 16, 16])   # 16*16
-    ys = tf.placeholder(tf.float32, [None, 10])
-x_image = tf.reshape(xs, [-1, 16, 16, 1])
+    xs = tf.placeholder(tf.float32, [None, 16, 16], name='x_input')   # 16*16
+    ys = tf.placeholder(tf.float32, [None, 10], name='y_input')
+x_image = tf.reshape(xs, [-1, 16, 16, 1], name='reshape')
 
 ## conv1 layer ##
 with tf.name_scope('CNN_1'):
@@ -145,3 +145,4 @@ for epoch in range(5000):       # epoch amount
         print(epoch, 'th', compute_accuracy(te_dat, te_lab))
 
 writer.close()
+sess.close()

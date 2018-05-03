@@ -65,7 +65,7 @@ model.compile(optimizer=adam,
 
 print('Training ------------')
 # Another way to train the model
-model.fit(tr_dat, tr_lab, epochs=5000, batch_size=100)
+model.fit(tr_dat, tr_lab, epochs=200, batch_size=1)
 
 print('\nTesting ------------')
 # Evaluate the model with the metrics we defined earlier
