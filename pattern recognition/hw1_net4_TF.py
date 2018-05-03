@@ -144,3 +144,4 @@ for epoch in range(5000):       # epoch amount
     if epoch % 100 == 0:
         print(epoch, 'th', compute_accuracy(te_dat, te_lab))
 
+writer.close()

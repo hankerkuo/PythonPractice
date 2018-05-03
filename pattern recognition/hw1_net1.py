@@ -1,3 +1,5 @@
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
 import numpy as np
 np.random.seed(1337)  # for reproducibility
 from keras.models import Sequential
@@ -11,7 +13,6 @@ from keras.utils import np_utils
 from keras.datasets import mnist
 # import playsound
 import time
-import os
 
 def scaled_hyperbolic_tangent(x):
     return K.tanh((2 / 3) * x) * 1.7159
