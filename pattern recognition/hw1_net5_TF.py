@@ -4,6 +4,7 @@ import numpy as np
 from scipy import ndimage
 # number 1 to 10 data
 
+
 def compute_accuracy(v_xs, v_ys):
     global prediction
     y_pre = sess.run(prediction, feed_dict={xs: v_xs, keep_prob: 1})
@@ -11,6 +12,7 @@ def compute_accuracy(v_xs, v_ys):
     accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
     result = sess.run(accuracy, feed_dict={xs: v_xs, ys: v_ys, keep_prob: 1})
     return result
+
 
 def weight_variable(shape):
     # truncated normal distribution
@@ -21,9 +23,11 @@ def weight_variable(shape):
         initial = tf.random_uniform(shape, minval=-2.4 / shape [0], maxval=2.4 / shape[0])
     return tf.Variable(initial)
 
+
 def bias_variable(shape):
     initial = tf.constant(0.0, shape=shape)
     return tf.Variable(initial)
+
 
 def conv2d(x, W):
     # stride [Batch, Height, Width, Channel], in the computer's point if view, it sees just four dimensions
@@ -31,10 +35,12 @@ def conv2d(x, W):
     # Must have strides[0] = strides[3] = 1
     return tf.nn.conv2d(x, W, strides=[1, 2, 2, 1], padding='SAME')
 
+
 def max_pool_2x2(x):
     # stride [Batch, Height, Width, Channel]
     # ksize [Batch, Height, Width, Channel]
     return tf.nn.max_pool(x, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME')
+
 
 # define placeholder for inputs to network
 xs = tf.placeholder(tf.float32, [None, 16, 16])   # 16*16
@@ -112,15 +118,12 @@ for _ in range(160):
     te_dat_after_gaussian_laplace[_, :, :] = ndimage.gaussian_laplace(te_dat[_, :, :], sigma=1)
 
 # training process starts
-# to divide data set into how many pieces
-batch_number = 3
-for epoch in range(5000):       # epoch amount
-    for batch_index in range(batch_number):
-        start = int(batch_index * (np.shape(tr_dat)[0] / batch_number))
-        end = int(batch_index * (np.shape(tr_dat)[0] / batch_number) + (np.shape(tr_dat)[0] / batch_number))
-        batch_xs = tr_dat[start:end]
-        batch_ys = tr_lab[start:end]
-        sess.run(train_step, feed_dict={xs: batch_xs, ys: batch_ys, keep_prob: 0.5})
+batch_size = 120
+for epoch in range(3000):       # epoch amount
+    for batch in range(len(tr_dat) // batch_size):
+        sess.run(train_step, feed_dict={xs: tr_dat[batch * batch_size: (batch + 1) * batch_size],
+                                        ys: tr_lab[batch * batch_size: (batch + 1) * batch_size]})
     if epoch % 100 == 0:
         print(epoch, 'th', compute_accuracy(te_dat, te_lab))
+
 

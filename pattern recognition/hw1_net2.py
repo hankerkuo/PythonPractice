@@ -1,7 +1,7 @@
 import numpy as np
 np.random.seed(1337)  # for reproducibility
 from keras.models import Sequential
-from keras.layers import Dense, Activation, Convolution2D, MaxPooling2D, Flatten, LocallyConnected2D, ZeroPadding2D
+from keras.layers import Dense, Activation
 from keras.optimizers import Adam
 from keras.initializers import random_uniform
 from six.moves import cPickle as pickle

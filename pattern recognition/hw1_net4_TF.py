@@ -131,16 +131,25 @@ for _ in range(160):
     te_dat_after_laplacian[_, :, :] = ndimage.laplace(te_dat[_, :, :])
     te_dat_after_gaussian_laplace[_, :, :] = ndimage.gaussian_laplace(te_dat[_, :, :], sigma=1)
 
-# training process starts
+### old version : training process starts ###
 # to divide data set into how many pieces
-batch_number = 3
-for epoch in range(5000):       # epoch amount
-    for batch_index in range(batch_number):
-        start = int(batch_index * (np.shape(tr_dat)[0] / batch_number))
-        end = int(batch_index * (np.shape(tr_dat)[0] / batch_number) + (np.shape(tr_dat)[0] / batch_number))
-        batch_xs = tr_dat[start:end]
-        batch_ys = tr_lab[start:end]
-        sess.run(train_step, feed_dict={xs: batch_xs, ys: batch_ys})
+# batch_number = 3
+# for epoch in range(5000):       # epoch amount
+#     for batch_index in range(batch_number):
+#         start = int(batch_index * (np.shape(tr_dat)[0] / batch_number))
+#         end = int(batch_index * (np.shape(tr_dat)[0] / batch_number) + (np.shape(tr_dat)[0] / batch_number))
+#         batch_xs = tr_dat[start:end]
+#         batch_ys = tr_lab[start:end]
+#         sess.run(train_step, feed_dict={xs: batch_xs, ys: batch_ys})
+#     if epoch % 100 == 0:
+#         print(epoch, 'th', compute_accuracy(te_dat, te_lab))
+
+# training process starts
+batch_size = 32
+for epoch in range(3000):       # epoch amount
+    for batch in range(len(tr_dat) // batch_size):
+        sess.run(train_step, feed_dict={xs: tr_dat[batch * batch_size: (batch + 1) * batch_size],
+                                        ys: tr_lab[batch * batch_size: (batch + 1) * batch_size]})
     if epoch % 100 == 0:
         print(epoch, 'th', compute_accuracy(te_dat, te_lab))
 
