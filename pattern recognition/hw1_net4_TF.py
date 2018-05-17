@@ -91,7 +91,11 @@ with tf.name_scope('train'):
     train_step = tf.train.AdamOptimizer(1e-4).minimize(mse)
 
 sess = tf.Session()
+
+# write log files using a FileWriter
+# access the tensorboard, -> tensorboard --logdir=C:\data\tensorboard\net4 , in this tf version no '' for logdir!!
 writer = tf.summary.FileWriter('C:/data/tensorboard/net4/', sess.graph)
+
 init = tf.global_variables_initializer()
 sess.run(init)
 # saver = tf.train.Saver()
@@ -146,11 +150,11 @@ for _ in range(160):
 
 # training process starts
 batch_size = 32
-for epoch in range(3000):       # epoch amount
+for epoch in range(100):       # epoch amount
     for batch in range(len(tr_dat) // batch_size):
         sess.run(train_step, feed_dict={xs: tr_dat[batch * batch_size: (batch + 1) * batch_size],
                                         ys: tr_lab[batch * batch_size: (batch + 1) * batch_size]})
-    if epoch % 100 == 0:
+    if epoch % 10 == 0:
         print(epoch, 'th', compute_accuracy(te_dat, te_lab))
 
 writer.close()

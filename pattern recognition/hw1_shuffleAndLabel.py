@@ -6,7 +6,7 @@ from six.moves import cPickle as pickle
 
 image_size = 16  # Pixel width and height.
 pixel_depth = 255.0  # Number of levels per pixel.
-
+# the functions here, we need to put '/' in the end of each path
 
 def one_hot(y_value, num_class):
     # delicate index operation, y_value is a 1D array, num_class is the amount of class (i.e for MNIST, num_class = 10)
