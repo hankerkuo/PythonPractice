@@ -2,6 +2,7 @@ import tensorflow as tf
 from six.moves import cPickle as pickle
 import numpy as np
 from scipy import ndimage
+import os
 # number 1 to 10 data
 
 
@@ -41,6 +42,8 @@ def max_pool_2x2(x):
     # ksize [Batch, Height, Width, Channel]
     return tf.nn.max_pool(x, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME')
 
+# define step
+global_step = tf.Variable(0, dtype=tf.int32, trainable=False, name='global_step')
 
 # define placeholder for inputs to network
 with tf.name_scope('inputs'):
@@ -88,18 +91,23 @@ with tf.name_scope('prediction'):
 with tf.name_scope('loss'):
     mse = tf.reduce_mean(0.5 * tf.square(ys - prediction))
 with tf.name_scope('train'):
-    train_step = tf.train.AdamOptimizer(1e-4).minimize(mse)
+    train_step = tf.train.AdamOptimizer(1e-4).minimize(mse, global_step=global_step)
 
+# define the accuracy estimating tensor
+with tf.name_scope('accuracy'):
+    same_or_not = tf.equal(tf.argmax(prediction, 1), tf.argmax(ys, 1))
+    accuracy = tf.reduce_mean(tf.cast(same_or_not, tf.float32))
+
+saver = tf.train.Saver()
 sess = tf.Session()
-
-# write log files using a FileWriter
-# access the tensorboard, -> tensorboard --logdir=C:\data\tensorboard\net4 , in this tf version no '' for logdir!!
-writer = tf.summary.FileWriter('C:/data/tensorboard/net4/', sess.graph)
-
 init = tf.global_variables_initializer()
 sess.run(init)
-# saver = tf.train.Saver()
-# saver.restore(sess, "my_net/save_net.ckpt")
+
+ckpt = tf.train.get_checkpoint_state(os.path.dirname('./checkpoint/net4/save_net.ckpt'))
+if ckpt and ckpt.model_checkpoint_path:
+     saver.restore(sess, ckpt.model_checkpoint_path)
+# saver.restore(sess, "./save_net.ckpt")
+
 
 with open('./train_data/data.pickle', 'rb') as f:
     tr_dat = pickle.load(f)
@@ -109,6 +117,17 @@ with open('./test_data/data.pickle', 'rb') as f:
     te_dat = pickle.load(f)
 with open('./test_data/label.pickle', 'rb') as f:
     te_lab = pickle.load(f)
+
+# summary
+with tf.name_scope("summaries"):
+    tf.summary.scalar("loss", mse)
+    tf.summary.scalar("accuracy", accuracy)
+    tf.summary.histogram("histogram loss", mse)
+    summary_op = tf.summary.merge_all()
+# write log files using a FileWriter
+# access the tensorboard, -> tensorboard --logdir=C:\data\tensorboard\net4 , in this tf version no '' for logdir!!
+writer_train = tf.summary.FileWriter('C:/data/tensorboard/net4/train/', sess.graph)
+writer_test = tf.summary.FileWriter('C:/data/tensorboard/net4/test/', sess.graph)
 
 # building ndarrays for storing results after filters
 tr_dat_after_sobel = np.ndarray(shape=(np.shape(tr_dat)), dtype=np.float32)
@@ -135,27 +154,30 @@ for _ in range(160):
     te_dat_after_laplacian[_, :, :] = ndimage.laplace(te_dat[_, :, :])
     te_dat_after_gaussian_laplace[_, :, :] = ndimage.gaussian_laplace(te_dat[_, :, :], sigma=1)
 
-### old version : training process starts ###
-# to divide data set into how many pieces
-# batch_number = 3
-# for epoch in range(5000):       # epoch amount
-#     for batch_index in range(batch_number):
-#         start = int(batch_index * (np.shape(tr_dat)[0] / batch_number))
-#         end = int(batch_index * (np.shape(tr_dat)[0] / batch_number) + (np.shape(tr_dat)[0] / batch_number))
-#         batch_xs = tr_dat[start:end]
-#         batch_ys = tr_lab[start:end]
-#         sess.run(train_step, feed_dict={xs: batch_xs, ys: batch_ys})
-#     if epoch % 100 == 0:
-#         print(epoch, 'th', compute_accuracy(te_dat, te_lab))
-
 # training process starts
 batch_size = 32
-for epoch in range(100):       # epoch amount
+for epoch in range(3000):       # epoch amount
     for batch in range(len(tr_dat) // batch_size):
-        sess.run(train_step, feed_dict={xs: tr_dat[batch * batch_size: (batch + 1) * batch_size],
+        train_op, loss = sess.run([train_step, mse], feed_dict={
+                                        xs: tr_dat[batch * batch_size: (batch + 1) * batch_size],
                                         ys: tr_lab[batch * batch_size: (batch + 1) * batch_size]})
-    if epoch % 10 == 0:
-        print(epoch, 'th', compute_accuracy(te_dat, te_lab))
+        # incremental average (refresh average loss after every epoch)
+        try:
+            average_loss += 1 / (batch + 1) * (loss - average_loss)
+        except:
+            average_loss = 0
+    if (epoch + 1) % 100 == 0:
+        print((epoch + 1), 'th test accuracy = %.3f' % compute_accuracy(te_dat, te_lab), end=' ')
+        print('train accuracy = %.3f' % compute_accuracy(tr_dat, tr_lab), end=' ')
+        print('(loss = %.4f)' % average_loss)
+        summary_test = sess.run(summary_op, feed_dict={xs: te_dat, ys: te_lab})
+        summary_train = sess.run(summary_op, feed_dict={xs: tr_dat, ys: tr_lab})
+        # save check point (named by the number of mini batch which has already fed into the NN)
+        # saver.save(sess, './checkpoint/net4/save_net.ckpt', global_step=(epoch + 1) * (len(tr_dat) // batch_size))
+        writer_test.add_summary(summary_test, global_step=(epoch + 1) * (len(tr_dat) // batch_size))
+        writer_train.add_summary(summary_train, global_step=(epoch + 1) * (len(tr_dat) // batch_size))
+    average_loss = 0
 
-writer.close()
+writer_test.close()
+writer_train.close()
 sess.close()

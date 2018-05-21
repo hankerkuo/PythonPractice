@@ -118,12 +118,24 @@ for _ in range(160):
     te_dat_after_gaussian_laplace[_, :, :] = ndimage.gaussian_laplace(te_dat[_, :, :], sigma=1)
 
 # training process starts
-batch_size = 120
+batch_size = 32
 for epoch in range(3000):       # epoch amount
     for batch in range(len(tr_dat) // batch_size):
-        sess.run(train_step, feed_dict={xs: tr_dat[batch * batch_size: (batch + 1) * batch_size],
+        train_op, loss = sess.run([train_step, mse], feed_dict={
+                                        xs: tr_dat[batch * batch_size: (batch + 1) * batch_size],
                                         ys: tr_lab[batch * batch_size: (batch + 1) * batch_size]})
+        # incremental average (refresh average loss after every epoch)
+        try:
+            average_loss += 1 / (batch + 1) * (loss - average_loss)
+        except:
+            average_loss = 0
     if epoch % 100 == 0:
-        print(epoch, 'th', compute_accuracy(te_dat, te_lab))
+        print(epoch, 'th test accuracy = %.3f' % compute_accuracy(te_dat, te_lab), end=' ')
+        print('train accuracy = %.3f' % compute_accuracy(tr_dat, tr_lab), end=' ')
+        print('(loss = %.4f)' % average_loss)
+    average_loss = 0
+
+
+sess.close()
 
 
