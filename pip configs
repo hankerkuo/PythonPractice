@@ -3,3 +3,6 @@ pip install tensorflow-gpu==1.5
 
 upgrade package:
 pip install tensorflow-gpu -U
+
+tensorboard config:
+tensorboard --logdir=C:\data\tensorboard\net3

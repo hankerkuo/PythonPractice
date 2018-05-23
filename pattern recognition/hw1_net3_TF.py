@@ -1,7 +1,5 @@
 import tensorflow as tf
 from six.moves import cPickle as pickle
-import numpy as np
-from scipy import ndimage
 import os
 from filter_operators import *
 # number 1 to 10 data
@@ -43,6 +41,7 @@ def max_pool_2x2(x):
     # ksize [Batch, Height, Width, Channel]
     return tf.nn.max_pool(x, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME')
 
+
 # define step
 global_step = tf.Variable(0, dtype=tf.int32, trainable=False, name='global_step')
 
@@ -52,7 +51,7 @@ with tf.name_scope('inputs'):
     ys = tf.placeholder(tf.float32, [None, 10], name='y_input')
 x_image = tf.reshape(xs, [-1, 16, 16, 1], name='reshape')
 
-## conv1 layer ##
+# conv1 layer
 with tf.name_scope('CNN_1'):
     with tf.name_scope('weight'):
         W_conv1 = weight_variable([3, 3, 1, 1])  # patch 3x3, in size 1, out size 1
@@ -62,7 +61,7 @@ with tf.name_scope('CNN_1'):
         # output size 8x8x2 (16x16x2 -> 8x8x2)
         h_conv1 = 1.7159 * tf.nn.tanh((2 / 3) * (conv2d(x_image, W_conv1) + b_conv1))
 
-## conv2 layer ##
+# conv2 layer
 with tf.name_scope('CNN_2'):
     with tf.name_scope('weight'):
         W_conv2 = weight_variable([5, 5, 1, 1])  # patch 5x5, in size 1, out size 1
@@ -72,7 +71,7 @@ with tf.name_scope('CNN_2'):
         # output size 4x4x1 (8x8x1 -> 4x4x1)
         h_conv2 = 1.7159 * tf.nn.tanh((2 / 3) * (conv2d(h_conv1, W_conv2) + b_conv2))
 
-## FC layer ##
+# FC layer
 with tf.name_scope('FC'):
     with tf.name_scope('weight'):
         W_fc1 = weight_variable([4*4*1, 10])
@@ -127,36 +126,12 @@ with tf.name_scope("summaries"):
     summary_op = tf.summary.merge_all()
 # write log files using a FileWriter
 # access the tensorboard, -> tensorboard --logdir=C:\data\tensorboard\net4 , in this tf version no '' for logdir!!
-writer_train = tf.summary.FileWriter('C:/data/tensorboard/net3/sobel_thres3.5/train/', sess.graph)
-writer_test = tf.summary.FileWriter('C:/data/tensorboard/net3/sobel_thres3.5/test/', sess.graph)
+writer_train = tf.summary.FileWriter('C:/data/tensorboard/net3/gaussian_laplace/train/', sess.graph)
+writer_test = tf.summary.FileWriter('C:/data/tensorboard/net3/gaussian_laplace/test/', sess.graph)
 
-# # building ndarrays for storing results after filters
-# tr_dat_after_sobel = np.ndarray(shape=(np.shape(tr_dat)), dtype=np.float32)
-# tr_dat_after_prewitt = np.ndarray(shape=(np.shape(tr_dat)), dtype=np.float32)
-# tr_dat_after_laplacian = np.ndarray(shape=(np.shape(tr_dat)), dtype=np.float32)
-# tr_dat_after_gaussian_laplace = np.ndarray(shape=(np.shape(tr_dat)), dtype=np.float32)
-#
-# te_dat_after_sobel = np.ndarray(shape=(np.shape(te_dat)), dtype=np.float32)
-# te_dat_after_prewitt = np.ndarray(shape=(np.shape(te_dat)), dtype=np.float32)
-# te_dat_after_laplacian = np.ndarray(shape=(np.shape(te_dat)), dtype=np.float32)
-# te_dat_after_gaussian_laplace = np.ndarray(shape=(np.shape(te_dat)), dtype=np.float32)
-#
-# # filter operations on training data
-# for _ in range(320):
-#     tr_dat_after_sobel[_, :, :] = ndimage.sobel(tr_dat[_, :, :], 1)
-#     tr_dat_after_prewitt[_, :, :] = ndimage.prewitt(tr_dat[_, :, :], 0)
-#     tr_dat_after_laplacian[_, :, :] = ndimage.laplace(tr_dat[_, :, :])
-#     tr_dat_after_gaussian_laplace[_, :, :] = ndimage.gaussian_laplace(tr_dat[_, :, :], sigma=1)
-#
-# # filter operations on test data
-# for _ in range(160):
-#     te_dat_after_sobel[_, :, :] = ndimage.sobel(te_dat[_, :, :], 1)
-#     te_dat_after_prewitt[_, :, :] = ndimage.prewitt(te_dat[_, :, :], 0)
-#     te_dat_after_laplacian[_, :, :] = ndimage.laplace(te_dat[_, :, :])
-#     te_dat_after_gaussian_laplace[_, :, :] = ndimage.gaussian_laplace(te_dat[_, :, :], sigma=1)
-
-tr_dat = sobel_operator(tr_dat, threshold=3.5)
-te_dat = sobel_operator(te_dat, threshold=3.5)
+# input data filter operation
+tr_dat = gaussian_laplace_operator(tr_dat)
+te_dat = gaussian_laplace_operator(te_dat)
 
 # training process starts
 batch_size = 32
