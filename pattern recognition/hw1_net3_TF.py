@@ -3,6 +3,7 @@ from six.moves import cPickle as pickle
 import numpy as np
 from scipy import ndimage
 import os
+from filter_operators import *
 # number 1 to 10 data
 
 
@@ -54,9 +55,9 @@ x_image = tf.reshape(xs, [-1, 16, 16, 1], name='reshape')
 ## conv1 layer ##
 with tf.name_scope('CNN_1'):
     with tf.name_scope('weight'):
-        W_conv1 = weight_variable([3, 3, 1, 2])  # patch 3x3, in size 1, out size 32
+        W_conv1 = weight_variable([3, 3, 1, 1])  # patch 3x3, in size 1, out size 1
     with tf.name_scope('bias'):
-        b_conv1 = bias_variable([8, 8, 2])
+        b_conv1 = bias_variable([8, 8, 1])
     with tf.name_scope('Wx_plus_bias_activation'):
         # output size 8x8x2 (16x16x2 -> 8x8x2)
         h_conv1 = 1.7159 * tf.nn.tanh((2 / 3) * (conv2d(x_image, W_conv1) + b_conv1))
@@ -64,11 +65,11 @@ with tf.name_scope('CNN_1'):
 ## conv2 layer ##
 with tf.name_scope('CNN_2'):
     with tf.name_scope('weight'):
-        W_conv2 = weight_variable([5, 5, 2, 1])  # patch 5x5, in size 2, out size 1
+        W_conv2 = weight_variable([5, 5, 1, 1])  # patch 5x5, in size 1, out size 1
     with tf.name_scope('bias'):
         b_conv2 = bias_variable([4, 4, 1])
     with tf.name_scope('Wx_plus_bias_activation'):
-        # output size 4x4x1 (8x8x2 -> 4x4x1)
+        # output size 4x4x1 (8x8x1 -> 4x4x1)
         h_conv2 = 1.7159 * tf.nn.tanh((2 / 3) * (conv2d(h_conv1, W_conv2) + b_conv2))
 
 ## FC layer ##
@@ -103,7 +104,7 @@ sess = tf.Session()
 init = tf.global_variables_initializer()
 sess.run(init)
 
-ckpt = tf.train.get_checkpoint_state(os.path.dirname('./checkpoint/net4/save_net.ckpt'))
+ckpt = tf.train.get_checkpoint_state(os.path.dirname('./checkpoint/net3/save_net.ckpt'))
 if ckpt and ckpt.model_checkpoint_path:
      saver.restore(sess, ckpt.model_checkpoint_path)
 # saver.restore(sess, "./save_net.ckpt")
@@ -126,36 +127,36 @@ with tf.name_scope("summaries"):
     summary_op = tf.summary.merge_all()
 # write log files using a FileWriter
 # access the tensorboard, -> tensorboard --logdir=C:\data\tensorboard\net4 , in this tf version no '' for logdir!!
-writer_train = tf.summary.FileWriter('C:/data/tensorboard/net4/original/train/', sess.graph)
-writer_test = tf.summary.FileWriter('C:/data/tensorboard/net4/original/test/', sess.graph)
+writer_train = tf.summary.FileWriter('C:/data/tensorboard/net3/sobel_thres3.5/train/', sess.graph)
+writer_test = tf.summary.FileWriter('C:/data/tensorboard/net3/sobel_thres3.5/test/', sess.graph)
 
-# building ndarrays for storing results after filters
-tr_dat_after_sobel = np.ndarray(shape=(np.shape(tr_dat)), dtype=np.float32)
-tr_dat_after_prewitt = np.ndarray(shape=(np.shape(tr_dat)), dtype=np.float32)
-tr_dat_after_laplacian = np.ndarray(shape=(np.shape(tr_dat)), dtype=np.float32)
-tr_dat_after_gaussian_laplace = np.ndarray(shape=(np.shape(tr_dat)), dtype=np.float32)
+# # building ndarrays for storing results after filters
+# tr_dat_after_sobel = np.ndarray(shape=(np.shape(tr_dat)), dtype=np.float32)
+# tr_dat_after_prewitt = np.ndarray(shape=(np.shape(tr_dat)), dtype=np.float32)
+# tr_dat_after_laplacian = np.ndarray(shape=(np.shape(tr_dat)), dtype=np.float32)
+# tr_dat_after_gaussian_laplace = np.ndarray(shape=(np.shape(tr_dat)), dtype=np.float32)
+#
+# te_dat_after_sobel = np.ndarray(shape=(np.shape(te_dat)), dtype=np.float32)
+# te_dat_after_prewitt = np.ndarray(shape=(np.shape(te_dat)), dtype=np.float32)
+# te_dat_after_laplacian = np.ndarray(shape=(np.shape(te_dat)), dtype=np.float32)
+# te_dat_after_gaussian_laplace = np.ndarray(shape=(np.shape(te_dat)), dtype=np.float32)
+#
+# # filter operations on training data
+# for _ in range(320):
+#     tr_dat_after_sobel[_, :, :] = ndimage.sobel(tr_dat[_, :, :], 1)
+#     tr_dat_after_prewitt[_, :, :] = ndimage.prewitt(tr_dat[_, :, :], 0)
+#     tr_dat_after_laplacian[_, :, :] = ndimage.laplace(tr_dat[_, :, :])
+#     tr_dat_after_gaussian_laplace[_, :, :] = ndimage.gaussian_laplace(tr_dat[_, :, :], sigma=1)
+#
+# # filter operations on test data
+# for _ in range(160):
+#     te_dat_after_sobel[_, :, :] = ndimage.sobel(te_dat[_, :, :], 1)
+#     te_dat_after_prewitt[_, :, :] = ndimage.prewitt(te_dat[_, :, :], 0)
+#     te_dat_after_laplacian[_, :, :] = ndimage.laplace(te_dat[_, :, :])
+#     te_dat_after_gaussian_laplace[_, :, :] = ndimage.gaussian_laplace(te_dat[_, :, :], sigma=1)
 
-te_dat_after_sobel = np.ndarray(shape=(np.shape(te_dat)), dtype=np.float32)
-te_dat_after_prewitt = np.ndarray(shape=(np.shape(te_dat)), dtype=np.float32)
-te_dat_after_laplacian = np.ndarray(shape=(np.shape(te_dat)), dtype=np.float32)
-te_dat_after_gaussian_laplace = np.ndarray(shape=(np.shape(te_dat)), dtype=np.float32)
-
-# filter operations on training data
-for _ in range(320):
-    tr_dat_after_sobel[_, :, :] = ndimage.sobel(tr_dat[_, :, :], 0)
-    tr_dat_after_prewitt[_, :, :] = ndimage.prewitt(tr_dat[_, :, :], 0)
-    tr_dat_after_laplacian[_, :, :] = ndimage.laplace(tr_dat[_, :, :])
-    tr_dat_after_gaussian_laplace[_, :, :] = ndimage.gaussian_laplace(tr_dat[_, :, :], sigma=1)
-
-# filter operations on test data
-for _ in range(160):
-    te_dat_after_sobel[_, :, :] = ndimage.sobel(te_dat[_, :, :], 0)
-    te_dat_after_prewitt[_, :, :] = ndimage.prewitt(te_dat[_, :, :], 0)
-    te_dat_after_laplacian[_, :, :] = ndimage.laplace(te_dat[_, :, :])
-    te_dat_after_gaussian_laplace[_, :, :] = ndimage.gaussian_laplace(te_dat[_, :, :], sigma=1)
-
-# tr_dat = tr_dat_after_prewitt
-# te_dat = te_dat_after_prewitt
+tr_dat = sobel_operator(tr_dat, threshold=3.5)
+te_dat = sobel_operator(te_dat, threshold=3.5)
 
 # training process starts
 batch_size = 32
