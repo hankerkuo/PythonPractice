@@ -2,6 +2,7 @@ import tensorflow as tf
 from six.moves import cPickle as pickle
 from filter_operators import *
 import os
+from variable_control import *
 # number 1 to 10 data
 
 
@@ -56,12 +57,13 @@ with tf.name_scope('convnet1'):
     W_conv1 = weight_variable([3, 3, 1, 2])  # patch 3x3, in size 1, out size 32
     b_conv1 = bias_variable([8, 8, 2])
     h_conv1 = 1.7159 * tf.nn.tanh((2 / 3) * (conv2d(x_image, W_conv1) + b_conv1))  # output size 8x8x2 (16x16x2 -> 8x8x2)
+    h_after_filter = tf.py_func(sobel_operator_nd, [h_conv1], tf.float32)
 
 # conv2 layer
 with tf.name_scope('convnet2'):
     W_conv2 = weight_variable([5, 5, 2, 4])  # patch 5x5, in size 2, out size 4
     b_conv2 = bias_variable([4, 4, 4])
-    h_conv2 = 1.7159 * tf.nn.tanh((2 / 3) * (conv2d(h_conv1, W_conv2) + b_conv2))  # output size 4x4x1 (8x8x2 -> 4x4x4)
+    h_conv2 = 1.7159 * tf.nn.tanh((2 / 3) * (conv2d(h_after_filter, W_conv2) + b_conv2))  # output size 4x4x1 (8x8x2 -> 4x4x4)
 
 # fc1 layer
 with tf.name_scope('fc_layer'):
@@ -120,8 +122,8 @@ with tf.Session() as sess:
 
     # write log files using a FileWriter
     # access the tensorboard, -> tensorboard --logdir=C:\data\tensorboard\net4 , in this tf version no '' for logdir!!
-    writer_train = tf.summary.FileWriter('C:/data/tensorboard/net5/original/train/', sess.graph)
-    writer_test = tf.summary.FileWriter('C:/data/tensorboard/net5/original/test/', sess.graph)
+    writer_train = tf.summary.FileWriter('C:/data/tensorboard/net5/test/train/', sess.graph)
+    writer_test = tf.summary.FileWriter('C:/data/tensorboard/net5/test/test/', sess.graph)
 
     # input data filter operation
     # tr_dat = prewitt_operator(tr_dat, threshold=0, axis=1)
