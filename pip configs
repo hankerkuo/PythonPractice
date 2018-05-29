@@ -6,3 +6,19 @@ pip install tensorflow-gpu -U
 
 tensorboard config:
 tensorboard --logdir=C:\data\tensorboard\net3
+
+managing versions:
+#
+# To activate this environment, use
+#
+#     $ conda activate py27
+#
+# To deactivate an active environment, use
+#
+#     $ conda deactivate
+
+check python version:
+python --version
+
+make a new environment in anaconda: (python2.7 for example)
+conda create -n py27 python=2.7 anaconda

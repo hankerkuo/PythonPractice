@@ -51,25 +51,49 @@ with tf.name_scope('inputs'):
     ys = tf.placeholder(tf.float32, [None, 10], name='y_input')
 x_image = tf.reshape(xs, [-1, 16, 16, 1], name='reshape')
 
-# conv1 layer
-with tf.name_scope('CNN_1'):
-    with tf.name_scope('weight'):
-        W_conv1 = weight_variable([3, 3, 1, 1])  # patch 3x3, in size 1, out size 1
-    with tf.name_scope('bias'):
-        b_conv1 = bias_variable([8, 8, 1])
-    with tf.name_scope('Wx_plus_bias_activation'):
-        # output size 8x8x2 (16x16x2 -> 8x8x2)
-        h_conv1 = 1.7159 * tf.nn.tanh((2 / 3) * (conv2d(x_image, W_conv1) + b_conv1))
+# conv1 (locally connected)
+conv1_padding = tf.keras.layers.ZeroPadding2D(
+    padding=1,
+    data_format='channels_last')(x_image)
+w_x_b_conv1 = tf.keras.layers.LocallyConnected2D(
+    filters=1,
+    strides=2,
+    kernel_size=[3, 3],
+    padding='valid',
+    data_format='channels_last',)(conv1_padding)
+h_conv1 = 1.7159 * tf.nn.tanh((2 / 3) * w_x_b_conv1)
 
-# conv2 layer
-with tf.name_scope('CNN_2'):
-    with tf.name_scope('weight'):
-        W_conv2 = weight_variable([5, 5, 1, 1])  # patch 5x5, in size 1, out size 1
-    with tf.name_scope('bias'):
-        b_conv2 = bias_variable([4, 4, 1])
-    with tf.name_scope('Wx_plus_bias_activation'):
-        # output size 4x4x1 (8x8x1 -> 4x4x1)
-        h_conv2 = 1.7159 * tf.nn.tanh((2 / 3) * (conv2d(h_conv1, W_conv2) + b_conv2))
+# conv2 (locally connected)
+conv2_padding = tf.keras.layers.ZeroPadding2D(
+    padding=2,
+    data_format='channels_last')(h_conv1)
+w_x_b_conv2 = tf.keras.layers.LocallyConnected2D(
+    filters=1,
+    strides=2,
+    kernel_size=[5, 5],
+    padding='valid',
+    data_format='channels_last',)(conv2_padding)
+h_conv2 = 1.7159 * tf.nn.tanh((2 / 3) * w_x_b_conv2)
+
+# # conv1 layer (weight shared)
+# with tf.name_scope('CNN_1'):
+#     with tf.name_scope('weight'):
+#         W_conv1 = weight_variable([3, 3, 1, 1])  # patch 3x3, in size 1, out size 1
+#     with tf.name_scope('bias'):
+#         b_conv1 = bias_variable([8, 8, 1])
+#     with tf.name_scope('Wx_plus_bias_activation'):
+#         # output size 8x8x2 (16x16x2 -> 8x8x2)
+#         h_conv1 = 1.7159 * tf.nn.tanh((2 / 3) * (conv2d(x_image, W_conv1) + b_conv1))
+#
+# # conv2 layer (weight shared)
+# with tf.name_scope('CNN_2'):
+#     with tf.name_scope('weight'):
+#         W_conv2 = weight_variable([5, 5, 1, 1])  # patch 5x5, in size 1, out size 1
+#     with tf.name_scope('bias'):
+#         b_conv2 = bias_variable([4, 4, 1])
+#     with tf.name_scope('Wx_plus_bias_activation'):
+#         # output size 4x4x1 (8x8x1 -> 4x4x1)
+#         h_conv2 = 1.7159 * tf.nn.tanh((2 / 3) * (conv2d(h_conv1, W_conv2) + b_conv2))
 
 # FC layer
 with tf.name_scope('FC'):
@@ -126,12 +150,12 @@ with tf.name_scope("summaries"):
     summary_op = tf.summary.merge_all()
 # write log files using a FileWriter
 # access the tensorboard, -> tensorboard --logdir=C:\data\tensorboard\net4 , in this tf version no '' for logdir!!
-writer_train = tf.summary.FileWriter('C:/data/tensorboard/net3/gaussian_laplace/train/', sess.graph)
-writer_test = tf.summary.FileWriter('C:/data/tensorboard/net3/gaussian_laplace/test/', sess.graph)
+writer_train = tf.summary.FileWriter('C:/data/tensorboard/net3/original/train/', sess.graph)
+writer_test = tf.summary.FileWriter('C:/data/tensorboard/net3/original/test/', sess.graph)
 
 # input data filter operation
-tr_dat = gaussian_laplace_operator(tr_dat)
-te_dat = gaussian_laplace_operator(te_dat)
+# tr_dat = gaussian_laplace_operator(tr_dat)
+# te_dat = gaussian_laplace_operator(te_dat)
 
 # training process starts
 batch_size = 32

@@ -41,6 +41,7 @@ def max_pool_2x2(x):
     # ksize [Batch, Height, Width, Channel]
     return tf.nn.max_pool(x, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME')
 
+
 # define step
 global_step = tf.Variable(0, dtype=tf.int32, trainable=False, name='global_step')
 
@@ -60,15 +61,27 @@ with tf.name_scope('CNN_1'):
         # output size 8x8x2 (16x16x2 -> 8x8x2)
         h_conv1 = 1.7159 * tf.nn.tanh((2 / 3) * (conv2d(x_image, W_conv1) + b_conv1))
 
-## conv2 layer ##
-with tf.name_scope('CNN_2'):
-    with tf.name_scope('weight'):
-        W_conv2 = weight_variable([5, 5, 2, 1])  # patch 5x5, in size 2, out size 1
-    with tf.name_scope('bias'):
-        b_conv2 = bias_variable([4, 4, 1])
-    with tf.name_scope('Wx_plus_bias_activation'):
-        # output size 4x4x1 (8x8x2 -> 4x4x1)
-        h_conv2 = 1.7159 * tf.nn.tanh((2 / 3) * (conv2d(h_conv1, W_conv2) + b_conv2))
+# ## conv2 layer ## (weight shared)
+# with tf.name_scope('CNN_2'):
+#     with tf.name_scope('weight'):
+#         W_conv2 = weight_variable([5, 5, 2, 1])  # patch 5x5, in size 2, out size 1
+#     with tf.name_scope('bias'):
+#         b_conv2 = bias_variable([4, 4, 1])
+#     with tf.name_scope('Wx_plus_bias_activation'):
+#         # output size 4x4x1 (8x8x2 -> 4x4x1)
+#         h_conv2 = 1.7159 * tf.nn.tanh((2 / 3) * (conv2d(h_conv1, W_conv2) + b_conv2))
+
+# conv2 layer (locally connected)
+after_padding = tf.keras.layers.ZeroPadding2D(
+    padding=2,
+    data_format='channels_last')(h_conv1)
+w_x_conv2 = tf.keras.layers.LocallyConnected2D(
+    filters=1,
+    strides=2,
+    kernel_size=[5, 5],
+    padding='valid',
+    data_format='channels_last',)(after_padding)
+h_conv2 = 1.7159 * tf.nn.tanh((2 / 3) * w_x_conv2)
 
 ## FC layer ##
 with tf.name_scope('FC'):
