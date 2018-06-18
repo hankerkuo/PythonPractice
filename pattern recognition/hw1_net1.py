@@ -34,9 +34,15 @@ te_dat = te_dat.reshape(-1, 16 * 16)
 model = Sequential()
 
 # Fully connected layer 1 to shape (10) for 10 classes
+# model.add(Dense(
+#         units=10,
+#         batch_input_shape=(None, 16 * 16),))
+# model.add(Dense(
+#         units=10,
+#         input_shape=[16 * 16]))
 model.add(Dense(
         units=10,
-        batch_input_shape=(None, 16 * 16),))
+        input_dim=16 * 16))
 model.add(Activation('scaled_hyperbolic_tangent'))
 
 # Another way to define your optimizer
@@ -49,7 +55,7 @@ model.compile(optimizer=adam,
 
 print('Training ------------')
 # Another way to train the model
-model.fit(tr_dat, tr_lab, epochs=3000, batch_size=32)
+model.fit(tr_dat, tr_lab, epochs=100, batch_size=32)
 
 print('\nTesting ------------')
 # Evaluate the model with the metrics we defined earlier

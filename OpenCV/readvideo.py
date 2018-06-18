@@ -3,7 +3,7 @@ import numpy as np
 
 # Create a VideoCapture object and read from input file
 # If the input is the camera, pass 0 instead of the video file name
-cap = cv2.VideoCapture('C:/Users/b0050/Videos/Harrypotter/philosopher\'s stone.mp4')
+cap = cv2.VideoCapture('C:/data/moviecapture/021323-021326.avi')
 
 # Check if camera opened successfully
 if (cap.isOpened() == False):
@@ -17,7 +17,7 @@ while (cap.isOpened()):
     if ret == True:
 
         # save each frame
-        cv2.imwrite('C:/Users/b0050/Videos/Harrypotter/capture/%d.jpg' % num, frame)
+        cv2.imwrite('C:/data/moviecapture/021323-021326/%d.jpg' % num, frame)
 
         # Display the resulting frame
         cv2.imshow('Frame', frame)

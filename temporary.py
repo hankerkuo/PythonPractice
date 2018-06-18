@@ -1,6 +1,11 @@
-import numpy as np
+class test:
+    def __init__(self):
+        print('test class')
+    def __str__(self):
+        return 'this is str'
+    def __repr__(self):
+        return 'this is repr'
 
-a = np.array([3, 2, 1, 3, 5])
-b = np.array([3, 2, 3, 3, 5])
-
-print(np.mean(a == b))
+if __name__ == '__main__':
+    for i, level in enumerate(range(2, 6)):
+        print(i, level)
