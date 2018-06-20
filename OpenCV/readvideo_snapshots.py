@@ -3,7 +3,7 @@ import numpy as np
 
 # Create a VideoCapture object and read from input file
 # If the input is the camera, pass 0 instead of the video file name
-cap = cv2.VideoCapture('C:/data/moviecapture/021323-021326.avi')
+cap = cv2.VideoCapture('C:/data/moviecapture/2853-2900.avi')
 
 # Check if camera opened successfully
 if (cap.isOpened() == False):
@@ -17,9 +17,10 @@ while (cap.isOpened()):
     if ret == True:
 
         # save each frame
-        cv2.imwrite('C:/data/moviecapture/021323-021326/%d.jpg' % num, frame)
+        cv2.imwrite('C:/data/moviecapture/temp/%d.jpg' % num, frame)
 
-        # Display the resulting frame
+        # Display the resulting frame, not essential part, decrease the snapshot speed
+        # You can test the execution time by python -m cProfile readvideo_snapshots.py
         cv2.imshow('Frame', frame)
 
         # Press Q on keyboard to  exit

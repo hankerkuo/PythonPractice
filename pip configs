@@ -30,3 +30,6 @@ jupyter notebook
 show if tensorflow is using CPU or GPU:
 import tensorflow as tf
 sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
+
+To test execution time of a .py script
+python -m cProfile OOO.py
