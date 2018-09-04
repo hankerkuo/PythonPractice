@@ -1,4 +1,6 @@
-# the function to for transfer decimal system number to different system number
+import readtxt
+
+# the function for transferring decimal system number to different system number
 # 'sys' means the carry system category, e.g. binary system, sys = 2
 def decimal_to_n(deci_num, sys):
     final = []
@@ -14,41 +16,33 @@ def decimal_to_n(deci_num, sys):
     return final
 
 
-# if the carry system is larger than 10, substitute 10~15 with A to F
-def A_to_F(list):
-    for n, i in enumerate(list):
-        if i == 10:
-            list[n] = 'A'
-        if i == 11:
-            list[n] = 'B'
-        if i == 12:
-            list[n] = 'C'
-        if i == 13:
-            list[n] = 'D'
-        if i == 14:
-            list[n] = 'E'
-        if i == 15:
-            list[n] = 'F'
-    return list
+# if the carry system is larger than 10, substitute 10~15 with A to F (using ASCII)
+def A_to_F(lst):
+    for n, i in enumerate(lst):
+        if i >= 10:
+            lst[n] = chr(i+55)
+    return lst
 
 
 # main function, the demand of the question
 def n_carry_game(n, t, m, p):
     all_array = []
-    result_array = []
+    result_array = ''
     add = 0
-    while len(all_array) < 10 ** 5:
+    while len(all_array) < t * m:
         all_array.extend(decimal_to_n(add, n))
         add += 1
     # print(all_array)
     for i in range(t):
         next_num = all_array[p - 1]
-        result_array.append(next_num)
+        result_array = result_array + str(next_num)
         p = p + m
     return result_array
 
-wish_list = n_carry_game(16, 16, 2, 2)
-for i in range(len(wish_list)):
-    print(wish_list[i], end='')
+prob1_input = readtxt.readfile_prob1()
+for i in range(len(prob1_input)):
+    wish_list = n_carry_game(*list(map(int, prob1_input[i])))
+    print('input:', prob1_input[i])
+    print('output:', wish_list, '\n')
 
 
