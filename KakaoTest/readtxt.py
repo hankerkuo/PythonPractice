@@ -1,3 +1,5 @@
+import re
+
 def readfile_prob1():
     f = open('input1.txt', 'r')
     lst = []
@@ -23,3 +25,26 @@ def readfile_prob3():
         lst.append(i.split(', '))
     return lst
 
+
+# for prob4 : read into a 3-D list
+# [ [ 'm1', [ [song1], [song2] ...] ]
+#   [ 'm2', [ [song1], [song2] ...]
+#   [ 'm3', [ [song1], [song2] ...] ]
+def readfile_prob4():
+    f = open('input4.txt', 'r')
+    lst = list(f)
+    single_prob = []
+    overall_output = []
+    for n in range(len(lst)):
+        # first group: “string” , second group: [string]
+        src = re.search(r'(“.+?”)(\[.+?\])', lst[n])
+        m = src.group(1)[1:-1]
+        music = src.group(2)[1:-1]
+        music = music.split(', ')
+        for i in range(len(music)):
+            music[i] = music[i][1:-1].split(',')
+        single_prob.append(m)
+        single_prob.extend(music)
+        overall_output.append(single_prob)
+        single_prob = []
+    return overall_output

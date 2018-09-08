@@ -1,6 +1,7 @@
 list = ['F-5 Freedom Fighter', 'B-50 Superfortress', 'A-10 Thunderbolt II', 'F-14 Tomcat']
 list_2 = ['img12.png', 'img10.png', 'img02.png', 'img1.png', 'IMG01.GIF', 'img2.JPG']
 import readtxt
+import operator
 
 # separate the list into head part and number part
 def file_name_renew(lst):
@@ -14,8 +15,10 @@ def file_name_renew(lst):
                 tail_pt = i
                 break
         lst[index] = [lst[index][0:number_pt], lst[index][number_pt:tail_pt], lst[index][tail_pt:]]
-    lst.sort(key=lambda x: int(x[1]))
-    lst.sort(key=lambda x: str.upper(x[0]))
+    # lst.sort(key=lambda x: int(x[1]))
+    # lst.sort(key=lambda x: str.upper(x[0]))
+    # same effect with the previous two lines, beware of the sequence difference!
+    lst.sort(key=lambda x: (str.upper(x[0]), int(x[1])))
     for i in range(len(lst)):
         lst[i] = lst[i][0] + lst[i][1] + lst[i][2]
     return lst
