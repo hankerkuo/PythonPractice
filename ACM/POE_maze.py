@@ -5,9 +5,11 @@ import random
 
 
 class POEMaze:
-    question = []
-    push_list = []
-    final_result = []
+
+    def __init__(self, prob=[]):
+        self.question = prob[:]
+        self.push_list = []
+        self.final_result = []
 
     def random_question(self):
         l = [1, 1, 1, 1, 1, 1, 1, 1]
@@ -19,9 +21,9 @@ class POEMaze:
 
     # question = [1, 1, 1, 1, 1, 1, 0, 1]
     # recursion version
-    def solve_question_recur(self, ques, start_pt=-1, first_recur=True):
+    def solve_question_recur(self, start_pt=-1, first_recur=True, ques=None):
         if first_recur is True:
-            self.question = ques[:]
+            ques = self.question[:]
         # print('push', start_pt)
         self.push_list.append(start_pt)
         for i in range(start_pt - 1, start_pt + 2):
@@ -33,14 +35,14 @@ class POEMaze:
             print('For solving', self.question, 'solution:', self.final_result)
         else:
             try:
-                self.solve_question_recur(ques, random.randrange(-1, 7), first_recur=False)
+                self.solve_question_recur(random.randrange(-1, 7), first_recur=False, ques=ques)
             except RecursionError:
                 print('finding solution failed, recursion exceed, please try again')
         return self.final_result
 
     # iteration version
-    def solve_question_iteration(self, ques):
-        self.question = ques[:]
+    def solve_question_iteration(self):
+        ques = self.question[:]
         while True:
             start_pt = random.randrange(-1, 7)
             self.push_list.append(start_pt)
@@ -57,4 +59,6 @@ class POEMaze:
 # question = lst
 # x = POEMaze()
 # x.solve_question(x.random_question())
-POEMaze().solve_question_iteration(POEMaze().random_question())
+
+
+POEMaze(POEMaze().random_question()).solve_question_recur()

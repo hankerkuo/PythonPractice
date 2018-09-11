@@ -48,3 +48,21 @@ def readfile_prob4():
         overall_output.append(single_prob)
         single_prob = []
     return overall_output
+
+
+def readfile_prob5():
+    f = open('input5.txt', 'r')
+    lst = list(f)
+    single_prob = []
+    overall_output = []
+    for n in range(len(lst)):
+        # [string]
+        src = re.search(r'\[.+?\]', lst[n])
+        term = src.group()[1:-1]
+        term = term.split(',')
+        for i in range(len(term)):
+            term[i] = term[i][1:-1]
+        single_prob.extend(term)
+        overall_output.append(single_prob)
+        single_prob = []
+    return overall_output
