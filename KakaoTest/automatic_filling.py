@@ -5,9 +5,10 @@ for single in pb:
     type_time = 0
     for ele in single:
         lst = single[:]
+        lst.remove(ele)
         for i in range(len(ele)):
             n = 0
-            while len(lst) > 1 and n < len(lst):
+            while len(lst) > 0 and n < len(lst):
                 try:
                     if ele[i] != lst[n][i]:
                         lst.remove(lst[n])
@@ -16,7 +17,7 @@ for single in pb:
                     lst.remove(lst[n])
                     continue
                 n += 1
-            if len(lst) == 1 or i == len(ele) - 1:
+            if len(lst) == 0 or i == len(ele) - 1:
                 type_time += i+1
                 break
     print(type_time, 'for', single)
