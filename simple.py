@@ -1,5 +1,5 @@
 import numpy as np
 
-prob = [1,2,3]
-question = prob[:] if prob else []
-print(question)
+for i in range(3):
+    i += 1
+    print(i)
