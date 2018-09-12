@@ -1,5 +1,5 @@
 import readtxt
-input = readtxt.readfile_prob4()
+input = readtxt.readfile_prob4_1()
 
 # separate the sharp note
 def sharp_note_sep(lst):
@@ -40,7 +40,11 @@ def song_match(target):
         # 재생된 시간도 같을 경우 먼저 입력된 음악 제목을 반환한다?
         # candidate.sort(key=lambda s: (-s[4], int(s[0][0:2]*60 + s[0][3:5])))
         candidate.sort(key=lambda s: -s[4])
-        print(candidate[0][2])
+        if len(candidate) == 0:
+            print('No.', i+1, '>NO MATCHED SONGS<')
+        else:
+            print('No.', i+1, candidate[0][2])
+
 
 song_match(input)
 
