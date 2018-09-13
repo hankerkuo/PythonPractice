@@ -1,6 +1,7 @@
 import readtxt
 input = readtxt.readfile_prob4_1()
 
+
 # separate the sharp note
 def sharp_note_sep(lst):
     real_list = []
@@ -10,6 +11,7 @@ def sharp_note_sep(lst):
         else:
             real_list.append(i)
     return real_list
+
 
 def song_match(target):
     # all samples
@@ -26,19 +28,15 @@ def song_match(target):
             if len(m_list) > time:
                 continue
             song = sharp_note_sep(musicinfos[n][3])
-            match = False
             for t in range(time - len(m_list)):
-                if not match:
-                    for x in range(len(m_list)):
-                        if song[(t + x) % len(song)] != m_list[x]:
-                            break
-                        elif x == len(m_list) - 1:
-                            candidate.append(musicinfos[n])
-                            match = True
-                elif match:
+                for x in range(len(m_list)):
+                    if song[(t + x) % len(song)] != m_list[x]:
+                        break
+                    elif x == len(m_list) - 1:
+                        candidate.append(musicinfos[n])
+                # if matched, means the for loop has gone through completely, then break
+                else:
                     break
-        # 재생된 시간도 같을 경우 먼저 입력된 음악 제목을 반환한다?
-        # candidate.sort(key=lambda s: (-s[4], int(s[0][0:2]*60 + s[0][3:5])))
         candidate.sort(key=lambda s: -s[4])
         if len(candidate) == 0:
             print('No.', i+1, '>NO MATCHED SONGS<')
