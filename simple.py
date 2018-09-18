@@ -1,2 +1,4 @@
-a = [1]
-print(a[-1])
+import re
+a = [0, 0]
+b = (3, 1)
+print(a+b)
