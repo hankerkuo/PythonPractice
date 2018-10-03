@@ -1,0 +1,128 @@
+import numpy as np
+import os
+import os.path as path
+from six.moves import cPickle as pickle
+import cv2
+import json
+import imageio
+
+# image size, must be same as the values defined in 'step1_resize'
+image_width = 100
+image_height = 100
+class_number = 10
+
+
+def one_hot(y_value, num_class):
+    # delicate index operation, y_value is a 1D array, num_class is the amount of class (i.e for MNIST, num_class = 10)
+    # reference: https://stackoverflow.com/questions/29831489/numpy-1-hot-array
+    hot = np.zeros((len(y_value), num_class))
+    hot[np.arange(len(y_value)), y_value] = 1
+    return hot
+
+
+# shuffle + label -> transfer into npy file, folder is the train or test data folder
+def npy_shuffle_and_label(folder, image_width, image_height):
+    image_files = os.listdir(folder)
+    np.random.shuffle(image_files)
+    # notice the shape here is (image_height, image_width)
+    data_set = np.ndarray(shape=(len(image_files), image_height, image_width, 3), dtype=np.float32)
+    label_set = np.ndarray(shape=(len(image_files)), dtype=np.int)
+    image_amount = 0
+
+    for image in image_files:
+        # strange part, when loading into 4d array, it automatically scales up, so need to divide 255
+        data_set[image_amount] = cv2.imread(path.join(folder, image)) / 255
+        # label the four houses in Hogwarts (R -> Ravenclaw, G -> Gryffindor, S -> Slytherin, H -> Hufflepuff)
+        if image[0] == 'R':
+            label_set[image_amount] = 0
+        elif image[0] == 'G':
+            label_set[image_amount] = 1
+        elif image[0] == 'S':
+            label_set[image_amount] = 2
+        elif image[0] == 'H':
+            label_set[image_amount] = 3
+        image_amount = image_amount + 1
+    label_set = one_hot(label_set, class_number)
+
+    np.save(path.join(folder, '00_data.npy'), data_set)
+    print('successfully made npy:', path.join(folder, '00_data.npy'))
+    np.save(path.join(folder, '00_label.npy'), label_set)
+    print('successfully made npy:', path.join(folder, '00_label.npy'))
+
+
+# shuffle + label -> transfer into pickle file, folder is the train or test data folder
+def shuffle_and_label(folder, image_width, image_height):
+    image_files = os.listdir(folder)
+    np.random.shuffle(image_files)
+    # notice the shape here is (image_height, image_width)
+    # data_set = np.ndarray(shape=(len(image_files), image_height, image_width, 3), dtype=np.float32)
+    data_set = np.ndarray(shape=(image_height, image_width), dtype=np.int)
+    label_set = np.ndarray(shape=(len(image_files)), dtype=np.int)
+    image_amount = 0
+
+    for image in image_files:
+        # strange part, when loading into 4d array, it automatically scales up, so need to divide 255
+        # data_set = cv2.imread(path.join(folder, image)) / 255
+        data_set[:, :] = np.sum(imageio.imread(os.path.join(folder, image)).astype(float), axis=2) / 765.0
+        # label the dataset
+        label_set[image_amount] = image[0]
+        image_amount = image_amount + 1
+        np.savetxt(os.path.join(folder, '%d.txt' % image_amount), data_set, '%d', delimiter='')
+    label_set = one_hot(label_set, class_number)
+    np.savetxt(os.path.join(folder, 'label.txt'), label_set, '%d', delimiter='')
+
+
+# shuffle + label -> transfer into pickle file, folder is the train or test data folder
+# gray-scale version
+def shuffle_and_label_grayscale(folder, image_width, image_height):
+    image_files = os.listdir(folder)
+    np.random.shuffle(image_files)
+    data_set = np.ndarray(shape=(len(image_files), image_height, image_width), dtype=np.float32)
+    label_set = np.ndarray(shape=(len(image_files)), dtype=np.int)
+    image_amount = 0
+    for image in image_files:
+        # strange part, when loading into 4d array, it automatically scales up, so need to divide 255
+        # gray-scale version
+        data_set[image_amount] = cv2.imread(path.join(folder, image), cv2.IMREAD_GRAYSCALE) / 255
+        if image[0] == 'R':
+            label_set[image_amount] = 0
+        elif image[0] == 'G':
+            label_set[image_amount] = 1
+        elif image[0] == 'S':
+            label_set[image_amount] = 2
+        elif image[0] == 'H':
+            label_set[image_amount] = 3
+        image_amount = image_amount + 1
+    label_set = one_hot(label_set, class_number)
+    try:
+        with open(path.join(folder, '00_data.pickle'), 'wb') as f:
+            pickle.dump(data_set, f, pickle.HIGHEST_PROTOCOL)
+            print('successfully made pickle:', path.join(folder, '00_data.pickle'))
+        with open(path.join(folder, '00_label.pickle'), 'wb') as f:
+            pickle.dump(label_set, f, pickle.HIGHEST_PROTOCOL)
+            print('successfully made pickle:', path.join(folder, '00_label.pickle'))
+    except Exception as e:
+        print('Unable to save data to', path.join(folder, 'XX.pickle'), 'wb', ':', e)
+
+
+# used to delete the existing pickle files
+def delete_old_pickle(folder):
+    try:
+        os.remove(path.join(folder, '00_data.pickle'))
+        print('successfully remove old pickle:', path.join(folder, '00_data.pickle'))
+    except Exception as e:
+        print('Unable to delete file', path.join(folder, '00_data.pickle'), 'error : ', e)
+    try:
+        os.remove(path.join(folder, '00_label.pickle'))
+        print('successfully remove old pickle:', path.join(folder, '00_label.pickle'))
+    except Exception as e:
+        print('Unable to delete file', path.join(folder, '00_label.pickle'), 'error : ', e)
+
+# sample code of using this lib
+'''
+data_set_folder = 'C:/data/HogwartsHouses/dataset_32by32'
+delete_old_pickle(data_set_folder + '/train_data')
+delete_old_pickle(data_set_folder + '/test_data')
+shuffle_and_label(data_set_folder + '/train_data', 32, 32)
+shuffle_and_label(data_set_folder + '/test_data', 32, 32)
+'''
