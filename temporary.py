@@ -1,11 +1,10 @@
-class test:
-    def __init__(self):
-        print('test class')
-    def __str__(self):
-        return 'this is str'
-    def __repr__(self):
-        return 'this is repr'
-
-if __name__ == '__main__':
-    for i, level in enumerate(range(2, 6)):
-        print(i, level)
+import numpy as np
+l = 10
+def abc():
+    global l
+    l += 1
+a = np.array([[1,2,3], [4,5,6]])
+a = np.reshape(a, (1, 6))
+a = np.reshape(a, (2, 3))
+abc()
+print(l)
