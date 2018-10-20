@@ -19,16 +19,14 @@ def sig_deri(x):
     return x * (1 - x)
 
 # 1st layer initialization
-CNN_layer1_map = np.ndarray(shape=(8, 8))
-CNN_layer1_weight = (np.random.rand(8, 8, 3, 3) - 0.5) * 2.5
-CNN_layer1_shared_weight = (np.random.rand(3, 3) - 0.5) * 2.5
-CNN_layer1_bias = np.random.rand(8, 8)
+CNN_layer1_map = np.ndarray(shape=(2, 8, 8))
+CNN_layer1_weight = (np.random.rand(2, 8, 8, 3, 3) - 0.5) * 2.5
+CNN_layer1_bias = np.random.rand(2, 8, 8)
 CNN_layer1_stride = 2
 
 # 2nd layer initialization
 CNN_layer2_map = np.ndarray(shape=(4, 4))
 CNN_layer2_weight = (np.random.rand(4, 4, 5, 5) - 0.5) * 2.5
-CNN_layer2_shared_weight = (np.random.rand(5, 5) - 0.5) * 2.5
 CNN_layer2_bias = np.random.rand(4, 4)
 CNN_layer2_stride = 2
 
@@ -50,24 +48,31 @@ def training(sample, test=False):
         for index_x in range(8):
             in_ind_x = index_x * CNN_layer1_stride + 1
             in_ind_y = index_y * CNN_layer1_stride + 1
-            output_mat = np.array([ele[in_ind_x - 1: in_ind_x + 2]
-                         for ele in layer1_input[in_ind_y - 1: in_ind_y + 2]]) * CNN_layer1_weight[index_y][index_x]
-            z = np.sum(output_mat) + CNN_layer1_bias[index_y][index_x]
+            # for both channels
+            output_mat_channel_1 = np.array([ele[in_ind_x - 1: in_ind_x + 2]
+                         for ele in layer1_input[in_ind_y - 1: in_ind_y + 2]]) * CNN_layer1_weight[0][index_y][index_x]
+            output_mat_channel_2 = np.array([ele[in_ind_x - 1: in_ind_x + 2]
+                         for ele in layer1_input[in_ind_y - 1: in_ind_y + 2]]) * CNN_layer1_weight[1][index_y][index_x]
+            z_channel_1 = np.sum(output_mat_channel_1) + CNN_layer1_bias[0][index_y][index_x]
+            z_channel_2 = np.sum(output_mat_channel_2) + CNN_layer1_bias[1][index_y][index_x]
             # with activation function
-            CNN_layer1_map[index_y][index_x] = sigmoid(z)
+            CNN_layer1_map[0][index_y][index_x] = sigmoid(z_channel_1)
+            CNN_layer1_map[1][index_y][index_x] = sigmoid(z_channel_2)
             # print(output_mat, z, ' ', index_y, index_x, sep='')
 
-    # zero padding
-    layer2_input = np.pad(CNN_layer1_map, ((2, 2), (2, 2)), 'constant', constant_values=((0, 0), (0, 0)))
+    # zero padding, now layer2_input has two channels
+    layer2_input = np.pad(CNN_layer1_map, ((0, 0), (2, 2), (2, 2)), 'constant')
     # second CNN layer
     global CNN_layer2_map
     for index_y in range(4):
         for index_x in range(4):
             in_ind_x = index_x * CNN_layer2_stride + 2
             in_ind_y = index_y * CNN_layer2_stride + 2
-            output_mat = np.array([ele[in_ind_x - 2: in_ind_x + 3]
-                         for ele in layer2_input[in_ind_y - 2: in_ind_y + 3]]) * CNN_layer2_weight[index_y][index_x]
-            z = np.sum(output_mat) + CNN_layer2_bias[index_y][index_x]
+            output_mat_from_channel_1 = np.array([ele[in_ind_x - 2: in_ind_x + 3]
+                         for ele in layer2_input[0][in_ind_y - 2: in_ind_y + 3]]) * CNN_layer2_weight[index_y][index_x]
+            output_mat_from_channel_2 = np.array([ele[in_ind_x - 2: in_ind_x + 3]
+                         for ele in layer2_input[1][in_ind_y - 2: in_ind_y + 3]]) * CNN_layer2_weight[index_y][index_x]
+            z = np.sum(output_mat_from_channel_1 + output_mat_from_channel_2) + CNN_layer2_bias[index_y][index_x]
             # with activation function
             CNN_layer2_map[index_y][index_x] = sigmoid(z)
             # print(output_mat, z, ' ', index_y, index_x, sep='')
@@ -83,7 +88,8 @@ def back_prop(sample):
     global FC_w, FC_b, CNN_layer1_weight, CNN_layer1_bias, CNN_layer2_weight, CNN_layer2_bias
     FC_input = CNN_layer2_map.reshape(1, -1)
     CNN2_a_flat = CNN_layer2_map.reshape(1, -1)
-    CNN1_a_flat = CNN_layer1_map.reshape(1, -1)
+    # CNN_a has two channel, first axis represents the channel
+    CNN1_a_flat = np.reshape(CNN_layer1_map, (2, -1))
     y = tr_lab[sample].reshape(1, 10)
 
     # L - 1 layer update, delta shape = (1, 10)
@@ -95,7 +101,7 @@ def back_prop(sample):
 
     # L - 2 layer update, delta shape = (1, 16)
     # deri_CNN_layer2_weight shape = (16, 144) 144(=12*12) is the amount after padding (8, 8)
-    layer2_input = np.pad(CNN_layer1_map, ((2, 2), (2, 2)), 'constant', constant_values=((0, 0), (0, 0)))
+    layer2_input = np.pad(np.sum(CNN_layer1_map, axis=0), ((2, 2), (2, 2)), 'constant')
     delta = np.dot(delta, FC_w.T) * sig_deri(CNN2_a_flat)
     deri_CNN_layer2_weight = np.dot(delta.T, layer2_input.reshape(1, 144))
     deri_CNN_layer2_weight = np.reshape(deri_CNN_layer2_weight, (4, 4, 12, 12))
@@ -130,9 +136,16 @@ def back_prop(sample):
                         single[8 * (in_ind_y + y) + (in_ind_x + x)] = CNN_layer2_weight[index_y][index_x][y + 2][x + 2]
             weight_reference.append(single)
     weight_reference = np.array(weight_reference)
-    delta = np.dot(delta, weight_reference) * sig_deri(CNN1_a_flat)
-    deri_CNN_layer1_weight = np.dot(delta.T, layer1_input.reshape(1, 18*18))
-    deri_CNN_layer1_weight = np.reshape(deri_CNN_layer1_weight, (8, 8, 18, 18))
+
+    # delta for two channels, delta matrix's first axis refers to the channel
+    ''' elegant method'''
+    delta = sig_deri(CNN1_a_flat) * np.dot(delta, weight_reference)  # after this operation delta shape -> (2, 64)
+    delta = np.reshape(delta, (2, 1, 64))
+    '''search the method for using np.transpose'''
+    deri_CNN_layer1_weight = np.dot(np.transpose(delta, axes=(0, 2, 1)), layer1_input.reshape(1, 18*18))
+    deri_CNN_layer1_weight = np.reshape(deri_CNN_layer1_weight, (2, 8, 8, 18, 18))
+
+    # loop for each node in the feature map
     for index_y in range(8):
         for index_x in range(8):
             in_ind_x = index_x * CNN_layer1_stride + 1
@@ -140,11 +153,14 @@ def back_prop(sample):
             # loop for each kernel
             for y in range(3):
                 for x in range(3):
-                    # CNN_layer1_weight[index_y][index_x][y][x] = CNN_layer1_weight[index_y][index_x][y][x] + \
-                    #     learning_rate * (deri_CNN_layer1_weight[8 * index_y + index_x][18 * (in_ind_y - 1 + y) + (in_ind_x - 1 + x)])
-                    CNN_layer1_weight[index_y][index_x][y][x] = CNN_layer1_weight[index_y][index_x][y][x] + \
-                        learning_rate * deri_CNN_layer1_weight[index_y][index_x][in_ind_y - 1 + y][in_ind_x - 1 + x]
-            CNN_layer1_bias = CNN_layer1_bias + learning_rate * np.reshape(delta, (8, 8))
+                    # loop for each channel's weight
+                    for channels in range(2):
+                        CNN_layer1_weight[channels][index_y][index_x][y][x] = CNN_layer1_weight[0][index_y][index_x][y][x] + \
+                        learning_rate * deri_CNN_layer1_weight[channels][index_y][index_x][in_ind_y - 1 + y][in_ind_x - 1 + x]
+            # loop for each channel's bias
+            for channels in range(2):
+                CNN_layer1_bias[channels] = CNN_layer1_bias[channels] + learning_rate * np.reshape(delta[channels], (8, 8))
+
 
 def test_accuracy():
     test_y = te_lab
@@ -169,9 +185,9 @@ def train_accuracy():
     return accuracy
 
 # hyper parameters
-learning_rate = 0.01
+learning_rate = 0.05
 epochs = 2000
-filter_type = 'laplacian_of_guassian'  # None, sobel, prewitt, laplacian, laplacian_of_guassian
+filter_type = 'None'  # None, sobel, prewitt, laplacian, laplacian_of_guassian
 
 if __name__ == "__main__":
 
@@ -191,11 +207,11 @@ if __name__ == "__main__":
             training(samples)
             back_prop(samples)
             # print(FC_w[0])
-        if epoch % 10 == 0:
-            print('epoch ', epoch, ':')
-            record[0][epoch] = epoch + 1
-            record[1][epoch] = train_accuracy()
-            record[2][epoch] = test_accuracy()
+        # if epoch % 10 == 0:
+        print('epoch ', epoch, ':')
+        record[0][epoch] = epoch + 1
+        record[1][epoch] = train_accuracy()
+        record[2][epoch] = test_accuracy()
 
     # np.savetxt('epochs {} {}.txt'.format(epochs, time.asctime().replace(':', '')), record, fmt='%2.3f')
     np.save('Epochs_{} LRate_{} Filter_{} Time_{}.npy'

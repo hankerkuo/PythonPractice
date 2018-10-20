@@ -24,7 +24,7 @@ def ht_deri(x):
     return 1.7159 * (2 / 3) * (1 - np.tanh(x) ** 2)
 
 
-epochs = 2000
+epochs = 1
 
 achieve_goal = False
 while achieve_goal is False:

@@ -20,14 +20,12 @@ def sig_deri(x):
 
 # 1st layer initialization
 CNN_layer1_map = np.ndarray(shape=(8, 8))
-CNN_layer1_weight = (np.random.rand(8, 8, 3, 3) - 0.5) * 2.5
 CNN_layer1_shared_weight = (np.random.rand(3, 3) - 0.5) * 2.5
 CNN_layer1_bias = np.random.rand(8, 8)
 CNN_layer1_stride = 2
 
 # 2nd layer initialization
 CNN_layer2_map = np.ndarray(shape=(4, 4))
-CNN_layer2_weight = (np.random.rand(4, 4, 5, 5) - 0.5) * 2.5
 CNN_layer2_shared_weight = (np.random.rand(5, 5) - 0.5) * 2.5
 CNN_layer2_bias = np.random.rand(4, 4)
 CNN_layer2_stride = 2
@@ -51,7 +49,7 @@ def training(sample, test=False):
             in_ind_x = index_x * CNN_layer1_stride + 1
             in_ind_y = index_y * CNN_layer1_stride + 1
             output_mat = np.array([ele[in_ind_x - 1: in_ind_x + 2]
-                         for ele in layer1_input[in_ind_y - 1: in_ind_y + 2]]) * CNN_layer1_weight[index_y][index_x]
+                         for ele in layer1_input[in_ind_y - 1: in_ind_y + 2]]) * CNN_layer1_shared_weight
             z = np.sum(output_mat) + CNN_layer1_bias[index_y][index_x]
             # with activation function
             CNN_layer1_map[index_y][index_x] = sigmoid(z)
@@ -66,7 +64,7 @@ def training(sample, test=False):
             in_ind_x = index_x * CNN_layer2_stride + 2
             in_ind_y = index_y * CNN_layer2_stride + 2
             output_mat = np.array([ele[in_ind_x - 2: in_ind_x + 3]
-                         for ele in layer2_input[in_ind_y - 2: in_ind_y + 3]]) * CNN_layer2_weight[index_y][index_x]
+                         for ele in layer2_input[in_ind_y - 2: in_ind_y + 3]]) * CNN_layer2_shared_weight
             z = np.sum(output_mat) + CNN_layer2_bias[index_y][index_x]
             # with activation function
             CNN_layer2_map[index_y][index_x] = sigmoid(z)
@@ -80,7 +78,7 @@ def training(sample, test=False):
     return FC_a
 
 def back_prop(sample):
-    global FC_w, FC_b, CNN_layer1_weight, CNN_layer1_bias, CNN_layer2_weight, CNN_layer2_bias
+    global FC_w, FC_b, CNN_layer1_shared_weight, CNN_layer1_bias, CNN_layer2_shared_weight, CNN_layer2_bias
     FC_input = CNN_layer2_map.reshape(1, -1)
     CNN2_a_flat = CNN_layer2_map.reshape(1, -1)
     CNN1_a_flat = CNN_layer1_map.reshape(1, -1)
@@ -103,21 +101,17 @@ def back_prop(sample):
         for index_x in range(4):
             in_ind_x = index_x * CNN_layer1_stride + 2
             in_ind_y = index_y * CNN_layer1_stride + 2
-            # loop for each kernel
+            # loop for the kernel
             for y in range(5):
                 for x in range(5):
-                    CNN_layer2_weight[index_y][index_x][y][x] = CNN_layer2_weight[index_y][index_x][y][x] + \
-                        learning_rate * deri_CNN_layer2_weight[index_y][index_x][in_ind_y - 2 + y][in_ind_x - 2 + x]
-            for y in range(5):
-                for x in range(5):
-                    CNN_layer2_weight[index_y][index_x][y][x] = CNN_layer2_weight[index_y][index_x][y][x] + \
+                    CNN_layer2_shared_weight[y][x] = CNN_layer2_shared_weight[y][x] + \
                         learning_rate * deri_CNN_layer2_weight[index_y][index_x][in_ind_y - 2 + y][in_ind_x - 2 + x]
             CNN_layer2_bias = CNN_layer2_bias + learning_rate * np.reshape(delta, (4, 4))
 
     # L - 3 layer update, delta shape = (1, 64)
     # deri_CNN_layer1_weight shape = (64, 18 * 18) 18 * 18 is the amount after padding (16, 16)
     layer1_input = np.pad(tr_dat[sample], ((1, 1), (1, 1)), 'constant', constant_values=((0, 0), (0, 0)))
-    # first make a (16, 64) CNN weight reference
+    # first make a (16, 64) CNN weight reference, to make the previous delta shape(1, 16) to (1, 64)
     weight_reference = []
     for index_y in range(4):
         for index_x in range(4):
@@ -127,7 +121,7 @@ def back_prop(sample):
             for y in range(-2, 3):
                 for x in range(-2, 3):
                     if 0 <= (in_ind_y + y) <= 7 and 0 <= (in_ind_x + x) <= 7:
-                        single[8 * (in_ind_y + y) + (in_ind_x + x)] = CNN_layer2_weight[index_y][index_x][y + 2][x + 2]
+                        single[8 * (in_ind_y + y) + (in_ind_x + x)] = CNN_layer2_shared_weight[y + 2][x + 2]
             weight_reference.append(single)
     weight_reference = np.array(weight_reference)
     delta = np.dot(delta, weight_reference) * sig_deri(CNN1_a_flat)
@@ -140,9 +134,7 @@ def back_prop(sample):
             # loop for each kernel
             for y in range(3):
                 for x in range(3):
-                    # CNN_layer1_weight[index_y][index_x][y][x] = CNN_layer1_weight[index_y][index_x][y][x] + \
-                    #     learning_rate * (deri_CNN_layer1_weight[8 * index_y + index_x][18 * (in_ind_y - 1 + y) + (in_ind_x - 1 + x)])
-                    CNN_layer1_weight[index_y][index_x][y][x] = CNN_layer1_weight[index_y][index_x][y][x] + \
+                    CNN_layer1_shared_weight[y][x] = CNN_layer1_shared_weight[y][x] + \
                         learning_rate * deri_CNN_layer1_weight[index_y][index_x][in_ind_y - 1 + y][in_ind_x - 1 + x]
             CNN_layer1_bias = CNN_layer1_bias + learning_rate * np.reshape(delta, (8, 8))
 
@@ -171,7 +163,7 @@ def train_accuracy():
 # hyper parameters
 learning_rate = 0.01
 epochs = 2000
-filter_type = 'laplacian_of_guassian'  # None, sobel, prewitt, laplacian, laplacian_of_guassian
+filter_type = 'None'  # None, sobel, prewitt, laplacian, laplacian_of_guassian
 
 if __name__ == "__main__":
 
@@ -191,13 +183,12 @@ if __name__ == "__main__":
             training(samples)
             back_prop(samples)
             # print(FC_w[0])
-        if epoch % 10 == 0:
-            print('epoch ', epoch, ':')
-            record[0][epoch] = epoch + 1
-            record[1][epoch] = train_accuracy()
-            record[2][epoch] = test_accuracy()
+        print('epoch ', epoch, ':')
+        record[0][epoch] = epoch + 1
+        record[1][epoch] = train_accuracy()
+        record[2][epoch] = test_accuracy()
 
     # np.savetxt('epochs {} {}.txt'.format(epochs, time.asctime().replace(':', '')), record, fmt='%2.3f')
-    np.save('Epochs_{} LRate_{} Filter_{} Time_{}.npy'
+    np.save('WShared-Epochs_{} LRate_{} Filter_{} Time_{}.npy'
             .format(epochs, learning_rate, filter_type, time.asctime().replace(':', '')), record)
 

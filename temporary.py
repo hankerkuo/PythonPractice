@@ -1,10 +1,15 @@
 import numpy as np
-l = 10
-def abc():
-    global l
-    l += 1
-a = np.array([[1,2,3], [4,5,6]])
-a = np.reshape(a, (1, 6))
-a = np.reshape(a, (2, 3))
-abc()
-print(l)
+
+a = np.array([
+    [[1, 2, 3],
+     [4, 5, 6],
+     [7, 8, 9]],
+
+    [[3, 2, 3],
+     [4, 5, 6],
+     [7, 8, 9]],
+])
+
+b = np.array([[1], [2], [3]])
+print(np.dot(a, b))
+print(np.transpose(a, axes=(0,2,1)))
