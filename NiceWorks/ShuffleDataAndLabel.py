@@ -8,6 +8,7 @@ N = 3
 ind_list = [i for i in range(N)]
 shuffle(ind_list)
 
+# use 1-d array to index!
 train_new = train[ind_list, :]
 target_new = target[ind_list]
 

@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-import seaborn as sns
+# import seaborn as sns
 import matplotlib.pyplot as plt
 
 def every_ten_epoch(lst):
@@ -10,6 +10,7 @@ def every_ten_epoch(lst):
         result.append(row)
     return np.array(result)
 
+'''
 result_file = 'WShared-Epochs_200 LRate_0.1 Filter_None Time_Wed Oct 17 204347 2018.npy'
 a = np.load(result_file)
 
@@ -23,10 +24,13 @@ laplacian = np.load('Epochs_2000 LRate_0.01 Filter_laplacian Time_Wed Oct 17 190
 laplacian = every_ten_epoch(laplacian)
 laplacian_gaussian = np.load('Epochs_2000 LRate_0.01 Filter_laplacian_of_guassian Time_Wed Oct 17 191001 2018.npy')
 laplacian_gaussian = every_ten_epoch(laplacian_gaussian)
+'''
 
+new = np.load('Net4_WShared_Epochs_2000 LRate_0.01 Filter_None Time_Mon Nov  5 233129 2018.npy')
+# new = every_ten_epoch(new)
 '''
 drawing part
-'''
+
 df = pd.DataFrame({'epoch': np.concatenate((No_filter[0], No_filter[0], No_filter[0], No_filter[0], No_filter[0])),
         'train_accuracy': np.concatenate((No_filter[1], sobel[1], prewitt[1], laplacian[1], laplacian_gaussian[1])),
         'filters': np.concatenate(( np.array(['No_filter' for i in range(len(No_filter[0]))]),
@@ -40,9 +44,8 @@ sns.relplot(x="epoch", y="train_accuracy",
             facet_kws=dict(sharex=False), hue="filters",
             kind="line", legend="full", data=df);
 plt.show()
-
-
-''' best accuracy finding 
-target = prewitt
-print('best testing accuracy:', np.max(target[2][0:2000]), 'its training accuracy:', target[1][np.argmax(target[2][0:2000])])
 '''
+
+''' best accuracy finding '''
+target = new
+print('best testing accuracy:', np.max(target[2][0:2000]), 'its training accuracy:', target[1][np.argmax(target[2][0:2000])])

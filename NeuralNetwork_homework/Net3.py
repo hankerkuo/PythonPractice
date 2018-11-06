@@ -146,7 +146,7 @@ def back_prop(sample):
                         learning_rate * deri_CNN_layer1_weight[index_y][index_x][in_ind_y - 1 + y][in_ind_x - 1 + x]
             CNN_layer1_bias = CNN_layer1_bias + learning_rate * np.reshape(delta, (8, 8))
 
-def test_accuracy():
+def validation_accuracy():
     test_y = te_lab
     test_count = 0
     for i in range(160):
@@ -195,9 +195,9 @@ if __name__ == "__main__":
             print('epoch ', epoch, ':')
             record[0][epoch] = epoch + 1
             record[1][epoch] = train_accuracy()
-            record[2][epoch] = test_accuracy()
+            record[2][epoch] = validation_accuracy()
 
     # np.savetxt('epochs {} {}.txt'.format(epochs, time.asctime().replace(':', '')), record, fmt='%2.3f')
-    np.save('Epochs_{} LRate_{} Filter_{} Time_{}.npy'
+    np.save('Net3_Epochs_{} LRate_{} Filter_{} Time_{}.npy'
             .format(epochs, learning_rate, filter_type, time.asctime().replace(':', '')), record)
 

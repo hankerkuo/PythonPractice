@@ -18,13 +18,16 @@ def sigmoid(x):
 def sig_deri(x):
     return x * (1 - x)
 
+
 # 1st layer initialization
-CNN_layer1_map = np.ndarray(shape=(2, 8, 8))
-CNN_layer1_weight = (np.random.rand(2, 8, 8, 3, 3) - 0.5) * 2.5
-CNN_layer1_bias = np.random.rand(2, 8, 8)
+layer1_ch = 2
+CNN_layer1_map = np.ndarray(shape=(layer1_ch, 8, 8))
+CNN_layer1_weight = (np.random.rand(layer1_ch, 8, 8, 3, 3) - 0.5) * 2.5
+CNN_layer1_bias = np.random.rand(layer1_ch, 8, 8)
 CNN_layer1_stride = 2
 
 # 2nd layer initialization
+layer1_ch = 1
 CNN_layer2_map = np.ndarray(shape=(4, 4))
 CNN_layer2_weight = (np.random.rand(4, 4, 5, 5) - 0.5) * 2.5
 CNN_layer2_bias = np.random.rand(4, 4)
@@ -46,9 +49,10 @@ def training(sample, test=False):
     # first CNN layer, index from 1 starts
     for index_y in range(8):
         for index_x in range(8):
-            in_ind_x = index_x * CNN_layer1_stride + 1
-            in_ind_y = index_y * CNN_layer1_stride + 1
+            in_x = index_x * CNN_layer1_stride + 1
+            in_y = index_y * CNN_layer1_stride + 1
             # for both channels
+            '''old version
             output_mat_channel_1 = np.array([ele[in_ind_x - 1: in_ind_x + 2]
                          for ele in layer1_input[in_ind_y - 1: in_ind_y + 2]]) * CNN_layer1_weight[0][index_y][index_x]
             output_mat_channel_2 = np.array([ele[in_ind_x - 1: in_ind_x + 2]
@@ -58,6 +62,13 @@ def training(sample, test=False):
             # with activation function
             CNN_layer1_map[0][index_y][index_x] = sigmoid(z_channel_1)
             CNN_layer1_map[1][index_y][index_x] = sigmoid(z_channel_2)
+            '''
+            output_mat = np.array([ele[in_x - 1: in_x + 2] for ele in layer1_input[in_y - 1: in_y + 2]]) *\
+                [single_w[index_y][index_x] for single_w in CNN_layer1_weight]
+            z = np.sum(output_mat, axis=(1, 2)) + [single_b[index_y][index_x] for single_b in CNN_layer1_bias]
+            # with activation function
+            for ch in range(layer1_ch):
+                CNN_layer1_map[ch][index_y][index_x] = sigmoid(z[ch])
             # print(output_mat, z, ' ', index_y, index_x, sep='')
 
     # zero padding, now layer2_input has two channels
@@ -66,13 +77,22 @@ def training(sample, test=False):
     global CNN_layer2_map
     for index_y in range(4):
         for index_x in range(4):
-            in_ind_x = index_x * CNN_layer2_stride + 2
-            in_ind_y = index_y * CNN_layer2_stride + 2
-            output_mat_from_channel_1 = np.array([ele[in_ind_x - 2: in_ind_x + 3]
-                         for ele in layer2_input[0][in_ind_y - 2: in_ind_y + 3]]) * CNN_layer2_weight[index_y][index_x]
-            output_mat_from_channel_2 = np.array([ele[in_ind_x - 2: in_ind_x + 3]
-                         for ele in layer2_input[1][in_ind_y - 2: in_ind_y + 3]]) * CNN_layer2_weight[index_y][index_x]
+            in_x = index_x * CNN_layer2_stride + 2
+            in_y = index_y * CNN_layer2_stride + 2
+            '''old version
+            output_mat_from_channel_1 = np.array([ele[in_x - 2: in_x + 3]
+                         for ele in layer2_input[0][in_y - 2: in_y + 3]]) * CNN_layer2_weight[index_y][index_x]
+            output_mat_from_channel_2 = np.array([ele[in_x - 2: in_x + 3]
+                         for ele in layer2_input[1][in_y - 2: in_y + 3]]) * CNN_layer2_weight[index_y][index_x]
             z = np.sum(output_mat_from_channel_1 + output_mat_from_channel_2) + CNN_layer2_bias[index_y][index_x]
+            # with activation function
+            CNN_layer2_map[index_y][index_x] = sigmoid(z)
+            # print(output_mat, z, ' ', index_y, index_x, sep='')
+            '''
+
+            output_mat = np.array([ [ele[in_x - 2: in_x + 3] for ele in layer2_input[ch][in_y - 2: in_y + 3]]
+                                    for ch in range(layer1_ch) ]) * CNN_layer2_weight[index_y][index_x]
+            z = np.sum(output_mat) + CNN_layer2_bias[index_y][index_x]
             # with activation function
             CNN_layer2_map[index_y][index_x] = sigmoid(z)
             # print(output_mat, z, ' ', index_y, index_x, sep='')
@@ -114,13 +134,9 @@ def back_prop(sample):
                 for x in range(5):
                     CNN_layer2_weight[index_y][index_x][y][x] = CNN_layer2_weight[index_y][index_x][y][x] + \
                         learning_rate * deri_CNN_layer2_weight[index_y][index_x][in_ind_y - 2 + y][in_ind_x - 2 + x]
-            for y in range(5):
-                for x in range(5):
-                    CNN_layer2_weight[index_y][index_x][y][x] = CNN_layer2_weight[index_y][index_x][y][x] + \
-                        learning_rate * deri_CNN_layer2_weight[index_y][index_x][in_ind_y - 2 + y][in_ind_x - 2 + x]
             CNN_layer2_bias = CNN_layer2_bias + learning_rate * np.reshape(delta, (4, 4))
 
-    # L - 3 layer update, delta shape = (1, 64)
+    # L - 3 layer update, delta shape = (2, 64)
     # deri_CNN_layer1_weight shape = (64, 18 * 18) 18 * 18 is the amount after padding (16, 16)
     layer1_input = np.pad(tr_dat[sample], ((1, 1), (1, 1)), 'constant', constant_values=((0, 0), (0, 0)))
     # first make a (16, 64) CNN weight reference
@@ -155,14 +171,14 @@ def back_prop(sample):
                 for x in range(3):
                     # loop for each channel's weight
                     for channels in range(2):
-                        CNN_layer1_weight[channels][index_y][index_x][y][x] = CNN_layer1_weight[0][index_y][index_x][y][x] + \
+                        CNN_layer1_weight[channels][index_y][index_x][y][x] = CNN_layer1_weight[channels][index_y][index_x][y][x] + \
                         learning_rate * deri_CNN_layer1_weight[channels][index_y][index_x][in_ind_y - 1 + y][in_ind_x - 1 + x]
             # loop for each channel's bias
             for channels in range(2):
                 CNN_layer1_bias[channels] = CNN_layer1_bias[channels] + learning_rate * np.reshape(delta[channels], (8, 8))
 
 
-def test_accuracy():
+def validation_accuracy():
     test_y = te_lab
     test_count = 0
     for i in range(160):
@@ -185,7 +201,7 @@ def train_accuracy():
     return accuracy
 
 # hyper parameters
-learning_rate = 0.05
+learning_rate = 0.01
 epochs = 2000
 filter_type = 'None'  # None, sobel, prewitt, laplacian, laplacian_of_guassian
 
@@ -211,9 +227,9 @@ if __name__ == "__main__":
         print('epoch ', epoch, ':')
         record[0][epoch] = epoch + 1
         record[1][epoch] = train_accuracy()
-        record[2][epoch] = test_accuracy()
+        record[2][epoch] = validation_accuracy()
 
     # np.savetxt('epochs {} {}.txt'.format(epochs, time.asctime().replace(':', '')), record, fmt='%2.3f')
-    np.save('Epochs_{} LRate_{} Filter_{} Time_{}.npy'
+    np.save('Net4_Epochs_{} LRate_{} Filter_{} Time_{}.npy'
             .format(epochs, learning_rate, filter_type, time.asctime().replace(':', '')), record)
 
