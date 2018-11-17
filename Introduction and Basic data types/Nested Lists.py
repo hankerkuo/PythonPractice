@@ -11,7 +11,7 @@ for i in range(int(input())):
 
 #Sorted_List = sorted(Total_List,key = lambda x : x[1])
 # first sort both the Total_List and Score_List
-Total_List.sort(key = lambda x : x[1])
+Total_List.sort(key=lambda x: x[1])
 Score_List.sort()
 NamesGonaShow = []
 #print(Total_List)
