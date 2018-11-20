@@ -1,3 +1,4 @@
+# THIS IMPLEMENTATION WILL INCLUDE CONFUSION MATRIX
 import numpy as np
 from six.moves import cPickle as pickle
 import time
@@ -169,11 +170,14 @@ def back_prop(sample):
                     CNN_layer1_bias[channels] = CNN_layer1_bias[channels] + learning_rate * np.reshape(delta[channels], (8, 8))
 
 
-def validation_accuracy():
+def validation_accuracy(gd_truth_n_prediction):
+    global epoch
     test_y = te_lab
     test_count = 0
     for i in range(160):
         result = training(i, test=True)
+        gd_truth_n_prediction[epoch][0][i] = np.argmax(test_y[i])
+        gd_truth_n_prediction[epoch][1][i] = np.argmax(result)
         if np.argmax(test_y[i]) == np.argmax(result):
             test_count += 1
             accuracy = test_count / 160 * 100
@@ -192,8 +196,8 @@ def train_accuracy():
     return accuracy
 
 # hyper parameters
-learning_rate = 0.01
-epochs = 2000
+learning_rate = 0.05
+epochs = 10
 filter_type = 'None'  # None, sobel, prewitt, laplacian, laplacian_of_guassian
 
 if __name__ == "__main__":
@@ -205,8 +209,11 @@ if __name__ == "__main__":
         for num in range(len(te_dat)):
             te_dat[num] = getattr(filters, filter_type)(te_dat[num])
 
-    # record -> 0: epoch 1: trainingaccuracy 2: testing accuracy
+    # record -> first axis -> [0]: epoch [1]: trainingaccuracy [2]: testing accuracy
     record = np.ndarray(shape=(3, epochs))
+    # ground_truth_plus_prediction -> 3d array -> axis0: epochs,
+    # axis1: [0]:truth & [1]:prediction, axis2: each testing data
+    ground_truth_plus_prediction = np.ndarray(shape=(epochs, 2, 160))
 
     for epoch in range(epochs):
         for stochastic in range(320):
@@ -217,9 +224,11 @@ if __name__ == "__main__":
         print('epoch ', epoch, ':')
         record[0][epoch] = epoch + 1
         record[1][epoch] = train_accuracy()
-        record[2][epoch] = validation_accuracy()
+        record[2][epoch] = validation_accuracy(ground_truth_plus_prediction)
 
     # np.savetxt('epochs {} {}.txt'.format(epochs, time.asctime().replace(':', '')), record, fmt='%2.3f')
     np.save('Net5_WShared_Epochs_{} LRate_{} Filter_{} Time_{}.npy'
             .format(epochs, learning_rate, filter_type, time.asctime().replace(':', '')), record)
+    np.save('Net5_ConfusionMatrix_WShared_Epochs_{} LRate_{} Filter_{} Time_{}.npy'
+            .format(epochs, learning_rate, filter_type, time.asctime().replace(':', '')), ground_truth_plus_prediction)
 
