@@ -6,7 +6,7 @@ target = np.array([0, 1, 0])
 
 N = 3
 ind_list = [i for i in range(N)]
-shuffle(ind_list)
+shuffle(ind_list)  # shuffle function doesn't have return value
 
 # use 1-d array to index!
 train_new = train[ind_list, :]
