@@ -196,8 +196,8 @@ def train_accuracy():
     return accuracy
 
 # hyper parameters
-learning_rate = 0.05
-epochs = 10
+learning_rate = 0.01
+epochs = 1000
 filter_type = 'None'  # None, sobel, prewitt, laplacian, laplacian_of_guassian
 
 if __name__ == "__main__":
