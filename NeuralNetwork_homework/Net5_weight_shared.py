@@ -3,6 +3,7 @@ import numpy as np
 from six.moves import cPickle as pickle
 import time
 import filters
+import gabor_filter
 
 with open('./train_data/data.pickle', 'rb') as f:
     tr_dat = pickle.load(f)
@@ -198,16 +199,22 @@ def train_accuracy():
 # hyper parameters
 learning_rate = 0.01
 epochs = 1000
-filter_type = 'None'  # None, sobel, prewitt, laplacian, laplacian_of_guassian
+filter_type = 'gabor'  # None, sobel, prewitt, laplacian, laplacian_of_guassian, gabor
 
 if __name__ == "__main__":
 
     # use filter
     if filter_type != 'None':
-        for num in range(len(tr_dat)):
-            tr_dat[num] = getattr(filters, filter_type)(tr_dat[num])
-        for num in range(len(te_dat)):
-            te_dat[num] = getattr(filters, filter_type)(te_dat[num])
+        if filter_type == 'gabor':
+            for num in range(len(tr_dat)):
+                tr_dat[num] = gabor_filter.gabor(tr_dat[num], 3, 12, 0, np.pi, 15, threshold=0)
+            for num in range(len(te_dat)):
+                te_dat[num] = gabor_filter.gabor(te_dat[num], 3, 12, 0, np.pi, 15, threshold=0)
+        else:
+            for num in range(len(tr_dat)):
+                tr_dat[num] = getattr(filters, filter_type)(tr_dat[num])
+            for num in range(len(te_dat)):
+                te_dat[num] = getattr(filters, filter_type)(te_dat[num])
 
     # record -> first axis -> [0]: epoch [1]: trainingaccuracy [2]: testing accuracy
     record = np.ndarray(shape=(3, epochs))

@@ -36,8 +36,8 @@ def print_confusion_matrix(confusion_matrix, class_names, figsize=(10, 7), fonts
         raise ValueError("Confusion matrix values must be integers.")
     heatmap.yaxis.set_ticklabels(heatmap.yaxis.get_ticklabels(), rotation=0, ha='right', fontsize=fontsize)
     heatmap.xaxis.set_ticklabels(heatmap.xaxis.get_ticklabels(), rotation=0, ha='right', fontsize=fontsize)
-    plt.ylabel('True label')
-    plt.xlabel('Predicted label')
+    plt.ylabel('Real digit ')
+    plt.xlabel('Predicted digit')
     return fig
 
 target = np.load('Net5_ConfusionMatrix_WShared_Epochs_1000 LRate_0.01 Filter_None Time_Wed Nov 21 040347 2018.npy')
