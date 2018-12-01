@@ -1,4 +1,5 @@
 # THIS IMPLEMENTATION WILL INCLUDE CONFUSION MATRIX
+# The input will now be able for different size of image
 import numpy as np
 from six.moves import cPickle as pickle
 import time
@@ -20,7 +21,6 @@ def sigmoid(x):
 def sig_deri(x):
     return x * (1 - x)
 
-
 # 1st layer initialization
 layer1_ch = 2
 CNN_layer1_map = np.ndarray(shape=(layer1_ch, 8, 8))
@@ -40,7 +40,7 @@ FC_w = (np.random.rand(16, 10) - 0.5) * 2.5
 FC_b = np.random.rand(1, 10)
 FC_a = 0
 
-def training(sample, test=False):
+def forward_prop(sample, test=False):
     global CNN_layer1_map
     if test is True:
         layer1_input = np.pad(te_dat[sample], ((1, 1), (1, 1)), 'constant', constant_values=((0, 0), (0, 0)))
@@ -176,7 +176,7 @@ def validation_accuracy(gd_truth_n_prediction):
     test_y = te_lab
     test_count = 0
     for i in range(160):
-        result = training(i, test=True)
+        result = forward_prop(i, test=True)
         gd_truth_n_prediction[epoch][0][i] = np.argmax(test_y[i])
         gd_truth_n_prediction[epoch][1][i] = np.argmax(result)
         if np.argmax(test_y[i]) == np.argmax(result):
@@ -189,7 +189,7 @@ def train_accuracy():
     test_y = tr_lab
     test_count = 0
     for i in range(160):
-        result = training(i, test=False)
+        result = forward_prop(i, test=False)
         if np.argmax(test_y[i]) == np.argmax(result):
             test_count += 1
             accuracy = test_count / 160 * 100
@@ -199,7 +199,9 @@ def train_accuracy():
 # hyper parameters
 learning_rate = 0.01
 epochs = 1000
-filter_type = 'gabor'  # None, sobel, prewitt, laplacian, laplacian_of_guassian, gabor
+filter_type = 'double_gabor'  # None, sobel, prewitt, laplacian, laplacian_of_guassian, gabor, double_gabor
+Gb_1 = gabor_filter.Gb_filter(ksize=3, sigma=12, theta=0, lambd=np.pi, gamma=15, threshold=0)
+Gb_2 = gabor_filter.Gb_filter(ksize=3, sigma=12, theta=45, lambd=np.pi, gamma=15, threshold=0)
 
 if __name__ == "__main__":
 
@@ -210,6 +212,11 @@ if __name__ == "__main__":
                 tr_dat[num] = gabor_filter.gabor(tr_dat[num], 3, 12, 0, np.pi, 15, threshold=0)
             for num in range(len(te_dat)):
                 te_dat[num] = gabor_filter.gabor(te_dat[num], 3, 12, 0, np.pi, 15, threshold=0)
+        elif filter_type == 'double_gabor':
+            for num in range(len(tr_dat)):
+                tr_dat[num] = gabor_filter.double_Gabor(tr_dat[num], Gb_1, Gb_2)
+            for num in range(len(te_dat)):
+                te_dat[num] = gabor_filter.double_Gabor(te_dat[num], Gb_1, Gb_2)
         else:
             for num in range(len(tr_dat)):
                 tr_dat[num] = getattr(filters, filter_type)(tr_dat[num])
@@ -225,7 +232,7 @@ if __name__ == "__main__":
     for epoch in range(epochs):
         for stochastic in range(320):
             samples = np.random.random_integers(0, 319)
-            training(samples)
+            forward_prop(samples)
             back_prop(samples)
         # if epoch % 10 == 0:
         print('epoch ', epoch, ':')

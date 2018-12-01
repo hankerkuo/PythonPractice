@@ -40,7 +40,7 @@ def print_confusion_matrix(confusion_matrix, class_names, figsize=(10, 7), fonts
     plt.xlabel('Predicted digit')
     return fig
 
-target = np.load('Net5_ConfusionMatrix_WShared_Epochs_1000 LRate_0.01 Filter_None Time_Wed Nov 21 040347 2018.npy')
+target = np.load('Net5_ConfusionMatrix_WShared_Epochs_1000 LRate_0.01 Filter_double_gabor Time_Wed Nov 28 011046 2018.npy')
 epoch = 999
 cf_matrix = confusion_matrix(target[epoch][0], target[epoch][1])
 
