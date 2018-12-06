@@ -1,6 +1,6 @@
 import numpy as np
 
-# a and b are numpy arrays representing each digit for two big number
+# a and b are numpy arrays representing each digit for two big numbers
 a = np.random.randint(10, size=25000)
 b = np.random.randint(10, size=25908)
 print(a, b, sep='\n')
