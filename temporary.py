@@ -1,9 +1,26 @@
-import cupy as cp
-import numpy as np
+from openalpr import Alpr
 
-# a = np.load('C:/OneDrive/文件/NRLab/2018가을학기/신경회로망 특론/4st과제/results/'
-#         'Net5_ConfusionMatrix_WShared_Epochs_1000 LRate_0.01 Filter_None Time_Wed Nov 21 040347 2018.npy')
+alpr = Alpr("us", "C:/openALPR/openalpr_64/openalpr.conf", "C:/openALPR/openalpr_64/runtime_data")
+if not alpr.is_loaded():
+    print("Error loading OpenALPR")
+    sys.exit(1)
 
-# a = cp.array([1,2,3])
-b = np.array([1,2,3])
-print(a)
+alpr.set_top_n(20)
+alpr.set_default_region("md")
+
+results = alpr.recognize_file("08.jpg")
+
+i = 0
+for plate in results['results']:
+    i += 1
+    print("Plate #%d" % i)
+    print("   %12s %12s" % ("Plate", "Confidence"))
+    for candidate in plate['candidates']:
+        prefix = "-"
+        if candidate['matches_template']:
+            prefix = "*"
+
+        print("  %s %12s%12f" % (prefix, candidate['plate'], candidate['confidence']))
+
+# Call when completely done to release memory
+alpr.unload()
