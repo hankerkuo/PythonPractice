@@ -42,5 +42,6 @@ int main()
   char show[100] = "";
   unsigned int str_length = strlen(str);
   permutation(str, show, str_length);
+  system("pause");
   return 0;
 }
