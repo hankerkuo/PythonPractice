@@ -6,7 +6,7 @@ import time
 
 # key_code for continuously pressing, 42 for shift, 29 for control
 key_code = 42
-print('POE fusion for RKN running ... on/off: scroll lock')
+print('horse game running ... on/off: scroll lock')
 while 1:
     # scroll lock for starting the process
     keyboard.wait(70)
@@ -15,12 +15,13 @@ while 1:
     for i in range(3):
         winsound.Beep(frequency, duration)
 
-    keyboard.press(key_code)
     while 1:
         if keyboard.is_pressed(70):
             break
-        time.sleep(0.05)
-        mouse.click()
+        time.sleep(0.3)
+        keyboard.press_and_release('j, k')
+        time.sleep(0.3)
+        keyboard.press_and_release('h, l')
 
     frequency = 2000
     duration = 1000

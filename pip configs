@@ -33,3 +33,6 @@ sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
 
 To test execution time of a .py script
 python -m cProfile OOO.py
+
+pyinstaller (with adding additional path)
+pyinstaller --onefile --add-data "C:\Anaconda3\Lib\site-packages\pyfiglet";./pyfiglet lotto_settler.py

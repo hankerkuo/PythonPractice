@@ -20,7 +20,8 @@ def sell_item():
 while 1:
     # TURN ON, block until scroll lock(70) has been stroked
     keyboard.wait(70)
-    keyboard.add_hotkey('~', lambda: keyboard.press_and_release('1, 2, 3, 4, 5, R'))
+    keyboard.add_hotkey('~', lambda: keyboard.press_and_release('1, 2, 3, 4, 5'))
+    keyboard.add_hotkey('Q+~', lambda: keyboard.press_and_release('1, 2, 3, 4, 5'))
     keyboard.add_hotkey('ctrl+~', lambda: sell_item())
     frequency = 2000  # Set Frequency To 2000 Hertz
     duration = 100  # Set Duration, 1000 ms == 1 second
@@ -30,6 +31,7 @@ while 1:
     # TURN OFF, block until scroll lock(70) has been stroked
     keyboard.wait(70)
     keyboard.remove_hotkey('~')
+    keyboard.remove_hotkey('Q+~')
     keyboard.remove_hotkey('ctrl+~')
     frequency = 2000
     duration = 1000
