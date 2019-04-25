@@ -1,6 +1,7 @@
 #include "stdio.h"
 #include "string.h"
 
+// permutation function
 void permutation(char str[100], char show[100], unsigned int str_length){
  if (strlen(show) == str_length){
      for(int i = 0; i < str_length; i++){

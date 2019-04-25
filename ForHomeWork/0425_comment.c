@@ -1,7 +1,7 @@
 #include "stdio.h"
 #include "string.h"
 
-//參數說明:str:輸入字串, show:用以儲存欲印出的排列組合, str_length:輸入字串的長度
+// permutation function, 參數說明:str:輸入字串, show:用以儲存欲印出的排列組合, str_length:輸入字串的長度
 void permutation(char str[100], char show[100], unsigned int str_length){
 // 必備的遞迴終止條件 當(show)的字串長度=輸入字串的長度 印出結果
  if (strlen(show) == str_length){
