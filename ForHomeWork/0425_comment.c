@@ -11,7 +11,7 @@ void permutation(char str[100], char show[100], unsigned int str_length){
      printf("\n");
  }
  else{
-// 變換輸入字串(str)的第一個字元
+// 這邊在做啥? -> 從輸入字串(str)中 挑出其中的一個字元作為預備輸出 並將剩下的字串丟入下一層遞迴中
  for (unsigned int i = 0; i < strlen(str); i++){
     //str_temp 與 show_temp 用來傳送結果給下一層遞迴 先宣告
      char str_temp[100] = "";
