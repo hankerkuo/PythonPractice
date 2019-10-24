@@ -78,13 +78,26 @@ class MLP:
             else:
                 activation = self.relu
 
+            w_grad = 0
             if l == self.last_layer:
-                delta = self.cross_entropy_prime(output, batch_y) * self.soft_max_prime(self.zs[l])
-                # delta = self.soft_max(self.zs[l]) - batch_y
+                # deltas = self.cross_entropy_prime(output, batch_y) * self.soft_max_prime(self.zs[l])
+                deltas = batch_y - self.soft_max(self.zs[l])
+                print('deltas', deltas.shape)
+                for i, delta in enumerate(deltas):
+                    # print('zs[l-1]', self.zs[l - 1].shape)
+                    w_grad += np.dot(activation(np.expand_dims(self.zs[l - 1][i], axis=1)),
+                                                np.expand_dims(delta, axis=0))
+
             else:
-                delta = np.dot(delta, self.ws[l + 1].T) * self.relu_prime(self.zs[l])
-            self.ws[l] -= lr * np.dot(activation(self.zs[l - 1].T), delta)
-            self.bs[l] -= lr * np.sum(delta, axis=0) / batch_y.shape[0]
+                deltas = np.dot(deltas, self.ws[l + 1].T) * self.relu_prime(self.zs[l])
+                print('deltas', deltas.shape)
+                for i, delta in enumerate(deltas):
+                    w_grad += np.dot(activation(np.expand_dims(self.zs[l - 1][i], axis=1)),
+                                                np.expand_dims(delta, axis=0))
+
+            w_grad = np.average(w_grad, axis=0)
+            self.ws[l] -= lr * w_grad
+            self.bs[l] -= lr * np.sum(deltas, axis=0) / batch_y.shape[0]
 
 
 
