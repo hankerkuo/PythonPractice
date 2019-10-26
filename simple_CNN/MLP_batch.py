@@ -46,7 +46,7 @@ class MlpBatch:
     def back_prop(self, x, y):
         x = np.reshape(x, (self.batch_size, self.inputnodes))
         y = np.reshape(y, (self.batch_size, self.hidden_nodes[-1]))
-        lr = 0.1
+        lr = 0.01
 
         for num in range(self.layers - 1, -1, -1):
             if num == self.layers - 1:

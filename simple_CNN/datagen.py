@@ -64,7 +64,7 @@ if __name__ == '__main__':
     if platform.system() == 'Windows':
         folder = 'C:/data/train_data'
     elif platform.system() == 'Linux':
-        folder = '/home/shaoheng/Documents/Thesis_KSH/training_data/old_data/CCPD_FR_for_classfifcation'
+        folder = '/home/shaoheng/Documents/PythonPractice/handwritedigit'
     data_generator = DataGenerator(folder, 1, (16, 16), 10)
 
     while 1:
