@@ -2,39 +2,40 @@ import numpy as np
 from datagen import DataGenerator
 import platform
 
+
 class FC:
 
     # nodes is the hidden nodes number
     def __init__(self, batch, feature_len, nodes, activation):
-        self.batch = batch
-        self.feature_len = feature_len
         self.activation = activation
-        self.w = np.random.rand(nodes, self.feature_len) - 0.5
+        self.w = np.random.rand(nodes, feature_len) - 0.5
         self.b = np.zeros(nodes, dtype=float)
-        self.z = np.empty((self.batch, nodes), dtype=float)
-        self.a = np.empty((self.batch, nodes), dtype=float)
+        self.z = np.empty((batch, nodes), dtype=float)
+        self.a = np.empty((batch, nodes), dtype=float)
     
     def forward_prop(self, input):
-        self.z = np.dot(input, self.w.T) + self.b
+        self.z = np.matmul(input, self.w.T) + self.b
         self.a = getattr(Activations(), self.activation)(self.z)
 
         return self.a
 
     def back_prop(self, label=False, w_nextlayer=None, delta_nextlayer=None, a_previouslayer=None):
+
+        deri_a_wrt_z = getattr(Activations(), self.activation + '_derivative')(self.z)
+
         if label is False:
-            delta = np.dot(w_nextlayer.T, delta_nextlayer) * getattr(Activations(), self.activation + '_derivative')(self.z)
+            # delta's first axis is also batch number, be familiar with matmul expression
+            delta = np.squeeze(np.matmul(w_nextlayer.T, np.expand_dims(delta_nextlayer, axis=2)), axis=-1) * deri_a_wrt_z
         else:
-            delta = Loss().MSE_derivative(label, self.a) * getattr(Activations(), self.activation + '_derivative')(self.z)
+            delta = Loss().CE_derivative(label, self.a) * deri_a_wrt_z
         
-        delta = np.average(delta, axis=0)
-        gradient_w = np.average(np.dot(np.expand_dims(a_previouslayer, axis=2), np.expand_dims(delta, axis=0)), axis=0).T
-        gradient_b = delta
+        # gradient_w = np.average(np.matmul(np.expand_dims(a_previouslayer, axis=2), np.expand_dims(delta, axis=1)), axis=0).T
+        gradient_w = np.average(np.matmul(np.expand_dims(delta, axis=2), np.expand_dims(a_previouslayer, axis=1)), axis=0)
+        gradient_b = np.average(delta, axis=0)
         self.w -= 0.1 * gradient_w
         self.b -= 0.1 * gradient_b
 
         return self.w, delta
-
-
 
 
 class Activations:
@@ -56,23 +57,15 @@ class Loss:
     
     def MSE_derivative(self, y, x):
         return -1 * (y - x)
+    
+    def CE_derivative(self, y, x, eps=10e-10):
+        return -1 * (x - y) / ((x - 1) * x + eps)
 
 
 if __name__ == '__main__':
-    # x = np.random.rand(16, 15)
-    # fc_layer1 = FC(x, 10, 'sigmoid')
-
-    # for i in range(10):
-    #     layer1_a = fc_layer1.forward_prop()
-
-    #     layer2_w = np.random.rand(20, 10)
-    #     layer2_delta = np.random.rand(20)
-
-    #     layer1_w, layer1_delta = fc_layer1.back_prop(layer2_w, layer2_delta, x)
-
-    #     print(layer1_w)
     if platform.system() == 'Windows':
         folder = 'C:/data/train_data'
+        test_folder = 'C:/data/test_data'
     elif platform.system() == 'Linux':
         folder = '/home/shaoheng/Documents/PythonPractice/handwritedigit'
 
@@ -81,6 +74,10 @@ if __name__ == '__main__':
 
     data_generator = DataGenerator(
         folder, batch, (16, 16), class_num=class_num)
+    
+    valid_data_gen = DataGenerator(
+        test_folder, 162, (16, 16), class_num=class_num)
+    valid_x, valid_y = valid_data_gen.load_data()
 
     layer_1 = FC(batch, 256, 12, 'sigmoid')
     layer_2 = FC(batch, 12, 10, 'sigmoid')
@@ -96,10 +93,12 @@ if __name__ == '__main__':
         layer2_w, layer2_delta = layer_2.back_prop(label=y, a_previouslayer=layer1_a)
         layer1_w, layer1_delta = layer_1.back_prop(w_nextlayer=layer2_w, delta_nextlayer=layer2_delta, a_previouslayer=x)
 
-        if i % 100 == 0:
+        if (i + 1) % 100 == 0:
             true_prediction = 0
-            for i in range(batch):
-                if np.argmax(y[i]) == np.argmax(layer2_a[i]):
+            for (x, y) in zip(valid_x, valid_y):
+                x = np.reshape(x, (1, 16 * 16))
+                layer1_out = layer_1.forward_prop(x)
+                layer2_out = layer_2.forward_prop(layer1_out)
+                if np.argmax(y) == np.argmax(layer2_out):
                     true_prediction += 1
-            print(true_prediction / batch)
-        
+            print('ite:{}, acc={}'.format((i + 1), true_prediction / 162))
