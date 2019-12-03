@@ -6,12 +6,16 @@ import platform
 class FC:
 
     # nodes is the hidden nodes number
-    def __init__(self, in_nodes, nodes, activation):
+    def __init__(self, nodes, activation):
         self.activation = activation
-        self.w = np.random.rand(nodes, in_nodes) - 0.5
-        self.b = np.zeros(nodes, dtype=float)
-    
+        self.nodes = nodes
+        self.initialized = False
+
     def forward_prop(self, input):
+        if not self.initialized:
+            self.w = np.random.rand(self.nodes, np.shape(input)[1]) - 0.5
+            self.b = np.zeros(self.nodes, dtype=float)
+            self.initialized = True
         self.z = np.matmul(input, self.w.T) + self.b
         self.a = getattr(Activations(), self.activation)(self.z)
         self.a_previous = input
@@ -45,13 +49,17 @@ class Conv1D:
         self.padding = padding
         self.stride = stride
         self.activation = activation
-        self.w = np.random.rand(channels, filter_size) - 0.5
-        self.b = np.zeros(channels, dtype=float)
+        self.initialized = False
     
     def forward_prop(self, input):
-        self.batch = np.shape(input)[0]
-        self.output_dim = np.ceil(np.shape(input)[1] / self.stride).astype('int')
-        self.z = np.empty((self.channels, self.batch, self.output_dim))
+        if not self.initialized:
+            self.batch = np.shape(input)[0]
+            self.input_dim = np.shape(input)[1]
+            self.output_dim = np.ceil(np.shape(input)[1] / self.stride).astype('int')
+            self.w = np.random.rand(self.channels, self.filter_size) - 0.5
+            self.b = np.zeros(self.channels, dtype=float)
+            self.z = np.empty((self.channels, self.batch, self.output_dim))
+            self.initialized = True
 
         if self.padding == 'same':
             input = self.same_padding(input)
@@ -71,7 +79,7 @@ class Conv1D:
 
         return self.a
     
-    def back_prop(self, label=False, w_nextlayer=None, delta_nextlayer=None):
+    def back_prop(self, label=False, w_nextlayer=None, delta_nextlayer=None, next_layer=None):
         
         delta = np.empty((self.channels, self.batch, self.output_dim))
         gradient_w = np.zeros((self.channels, self.batch, self.filter_size))
@@ -79,14 +87,27 @@ class Conv1D:
         # each channel
         for i, z in enumerate(self.z):
             deri_a_wrt_z = getattr(Activations(), self.activation + '_derivative')(z)
-            w_next = w_nextlayer[:, i * self.output_dim: (i + 1) * self.output_dim]
-            delta[i, :, :] = np.squeeze(np.matmul(w_next.T, np.expand_dims(delta_nextlayer, axis=2)), axis=-1) * deri_a_wrt_z
+
+            if next_layer == 'FC':
+                w_next = w_nextlayer[:, i * self.output_dim: (i + 1) * self.output_dim]
+                delta[i, :, :] = np.squeeze(np.matmul(w_next.T, np.expand_dims(delta_nextlayer, axis=2)), axis=-1) * deri_a_wrt_z
+            elif next_layer == 'Conv1D':
+                ch_sz_next = np.shape(w_nextlayer)[0]
+                filter_sz_next = np.shape(w_nextlayer)[1]
+                w_next = np.rot90(w_nextlayer)
+                delta_next = np.swapaxes(delta_nextlayer, 0, 1)
+                delta_next = np.pad(delta_next, ((0, 0), (0, 0), (filter_sz_next - 1, filter_sz_next - 1)), mode='constant')
+                w_by_delta = np.matmul(w_next, delta_next)
+                for k in range(self.output_dim):
+                    delta[i, :, k] = np.sum(np.diagonal (w_by_delta[:, :, k : k + filter_sz_next], axis1=1, axis2=2), axis=1)
+                delta[i] = delta[i] * deri_a_wrt_z
+
             # each output node
             for k in range(self.output_dim):
                 gradient_w[i] += np.multiply(np.expand_dims(delta[i, :, k], axis=1), 
                                             self.a_previous[:, k * self.stride: k * self.stride + self.filter_size])
-            self.w[i] -= 0.1 * np.average(gradient_w[i], axis=0)
-            self.b[i] -= 0.1 * np.average(delta[i])
+            self.w[i] -= 1 * np.average(gradient_w[i], axis=0)
+            self.b[i] -= 1 * np.average(delta[i])
 
         return self.w, delta
 
@@ -100,7 +121,6 @@ class Conv1D:
             pad_right = self.filter_size // 2 + 1
             return np.pad(input, ((0, 0), (pad_left, pad_right)), mode='constant')             
             
-
 
 class Activations:
 
@@ -143,26 +163,37 @@ if __name__ == '__main__':
         test_folder, 162, (16, 16), class_num=class_num)
     valid_x, valid_y = valid_data_gen.load_data()
 
-    conv_1 = Conv1D(3, 5, 'same', 2, 'sigmoid')
-    fc_1 = FC(128 * 5, 10, 'sigmoid')
+    conv_1 = Conv1D(5, 2, 'same', 2, 'sigmoid')
+    conv_2 = Conv1D(5, 4, 'same', 2, 'sigmoid')
+    # fc_1 = FC(nodes=12, activation='sigmoid')
+    fc_2 = FC(nodes=10, activation='sigmoid')
 
     for i in range(1000000):
 
         x, y = data_generator.load_data()
         x = np.reshape(x, (batch, 16 * 16))
 
+        # forward
         x = conv_1.forward_prop(x)
-        x = fc_1.forward_prop(x)
+        x = conv_2.forward_prop(x)
+        # x = fc_1.forward_prop(x)
+        x = fc_2.forward_prop(x)
 
-        w, delta = fc_1.back_prop(label=y)
-        conv_1.back_prop(w_nextlayer=w, delta_nextlayer=delta)
+        # backward
+        w, delta = fc_2.back_prop(label=y)
+        # w, delta = fc_1.back_prop(w_nextlayer=w, delta_nextlayer=delta)
+        w, delta = conv_2.back_prop(w_nextlayer=w, delta_nextlayer=delta, next_layer='FC')
+        conv_1.back_prop(w_nextlayer=w, delta_nextlayer=delta, next_layer='Conv1D')
 
+        # validation
         if (i + 1) % 10 == 0:
             true_prediction = 0
             for (x, y) in zip(valid_x, valid_y):
                 x = np.reshape(x, (1, 16 * 16))
-                conv1_out = conv_1.forward_prop(x)
-                fc1_out = fc_1.forward_prop(conv1_out)
-                if np.argmax(y) == np.argmax(fc1_out):
+                x = conv_1.forward_prop(x)
+                x = conv_2.forward_prop(x)
+                # x = fc_1.forward_prop(x)
+                x = fc_2.forward_prop(x)
+                if np.argmax(y) == np.argmax(x):
                     true_prediction += 1
             print('ite:{}, acc={}'.format((i + 1), true_prediction / 162))
