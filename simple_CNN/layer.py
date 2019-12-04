@@ -44,6 +44,9 @@ class Conv1D:
 
     # 1D conv, filter size is a integer
     def __init__(self, filter_size, channels, padding, stride, activation):
+        assert padding in ['same'], 'Padding method not defined!'
+        assert activation in ['sigmoid'], 'acitvation method not defined!'
+
         self.filter_size = filter_size
         self.channels = channels
         self.padding = padding
@@ -65,7 +68,7 @@ class Conv1D:
             input = self.same_padding(input)
 
         self.a_previous = input
-
+        
         # each channel
         for i, w in enumerate(self.w):
             # each output node
@@ -92,14 +95,14 @@ class Conv1D:
                 w_next = w_nextlayer[:, i * self.output_dim: (i + 1) * self.output_dim]
                 delta[i, :, :] = np.squeeze(np.matmul(w_next.T, np.expand_dims(delta_nextlayer, axis=2)), axis=-1) * deri_a_wrt_z
             elif next_layer == 'Conv1D':
-                ch_sz_next = np.shape(w_nextlayer)[0]
                 filter_sz_next = np.shape(w_nextlayer)[1]
                 w_next = np.rot90(w_nextlayer)
                 delta_next = np.swapaxes(delta_nextlayer, 0, 1)
                 delta_next = np.pad(delta_next, ((0, 0), (0, 0), (filter_sz_next - 1, filter_sz_next - 1)), mode='constant')
                 w_by_delta = np.matmul(w_next, delta_next)
                 for k in range(self.output_dim):
-                    delta[i, :, k] = np.sum(np.diagonal (w_by_delta[:, :, k : k + filter_sz_next], axis1=1, axis2=2), axis=1)
+                    # average is used for averaging the error of every channel in the next layer
+                    delta[i, :, k] = np.average(np.diagonal (w_by_delta[:, :, k : k + filter_sz_next], axis1=1, axis2=2), axis=1)
                 delta[i] = delta[i] * deri_a_wrt_z
 
             # each output node
@@ -121,6 +124,107 @@ class Conv1D:
             pad_right = self.filter_size // 2 + 1
             return np.pad(input, ((0, 0), (pad_left, pad_right)), mode='constant')             
             
+
+class Conv2D:
+
+    # 2D conv, filter size is also an integer (receive square filter)
+    def __init__(self, filter_size, channels, padding, stride, activation):
+        assert padding in ['same'], 'Padding method not defined!'
+        assert activation in ['sigmoid'], 'acitvation method not defined!'
+
+        self.filter_size = filter_size
+        self.channels = channels
+        self.padding = padding
+        self.stride = stride
+        self.activation = activation
+        self.initialized = False
+    
+    # input receive 4-dimension data [channels, batch, height, width] 
+    def forward_prop(self, input):
+        if not self.initialized:
+            self.batch = np.shape(input)[1]
+            self.out_h_w = np.ceil(np.array(np.shape(input)[2: 4]) / self.stride).astype('int')
+            self.w = np.random.rand(self.channels, self.filter_size, self.filter_size) - 0.5
+            self.b = np.zeros(self.channels, dtype=float)
+            self.z = np.empty((self.channels, self.batch, self.out_h_w[0], self.out_h_w[1]))
+            self.initialized = True
+
+        # each channel
+        for i, w in enumerate(self.w):
+            self.z[i] = self.conv_operation(input, w, stride=self.stride, padding=self.padding)
+        
+        # a saves the input after padding
+        if self.padding == 'same':
+            self.a_previous = self.same_padding(input, self.filter_size)
+        self.a = getattr(Activations(), self.activation)(self.z)
+
+        return self.a
+    
+    # def back_prop(self, label=False, w_nextlayer=None, delta_nextlayer=None, next_layer=None):
+        
+    #     delta = np.empty((self.channels, self.batch, self.output_dim))
+    #     gradient_w = np.zeros((self.channels, self.batch, self.filter_size))
+
+    #     # each channel
+    #     for i, z in enumerate(self.z):
+    #         deri_a_wrt_z = getattr(Activations(), self.activation + '_derivative')(z)
+
+    #         if next_layer == 'FC':
+    #             w_next = w_nextlayer[:, i * self.output_dim: (i + 1) * self.output_dim]
+    #             delta[i, :, :] = np.squeeze(np.matmul(w_next.T, np.expand_dims(delta_nextlayer, axis=2)), axis=-1) * deri_a_wrt_z
+    #         elif next_layer == 'Conv1D':
+    #             filter_sz_next = np.shape(w_nextlayer)[1]
+    #             w_next = np.rot90(w_nextlayer)
+    #             delta_next = np.swapaxes(delta_nextlayer, 0, 1)
+    #             delta_next = np.pad(delta_next, ((0, 0), (0, 0), (filter_sz_next - 1, filter_sz_next - 1)), mode='constant')
+    #             w_by_delta = np.matmul(w_next, delta_next)
+    #             for k in range(self.output_dim):
+    #                 # average is used for averaging the error of every channel in the next layer
+    #                 delta[i, :, k] = np.average(np.diagonal (w_by_delta[:, :, k : k + filter_sz_next], axis1=1, axis2=2), axis=1)
+    #             delta[i] = delta[i] * deri_a_wrt_z
+
+    #         # each output node
+    #         for k in range(self.output_dim):
+    #             gradient_w[i] += np.multiply(np.expand_dims(delta[i, :, k], axis=1), 
+    #                                         self.a_previous[:, k * self.stride: k * self.stride + self.filter_size])
+    #         self.w[i] -= 1 * np.average(gradient_w[i], axis=0)
+    #         self.b[i] -= 1 * np.average(delta[i])
+
+    #     return self.w, delta
+
+    '''
+    conv operation revceives 4-dimension data [channels, batch, height, width]
+    '''
+    def conv_operation(self, input, filter, stride, padding):
+        # only support for square filter
+        filter_size = np.shape(filter)[0]
+
+        if padding == 'same':
+            out_h_w = np.ceil(np.array(np.shape(input)[2: 4]) / stride).astype('int')
+            output = np.zeros((np.shape(input)[1], out_h_w[0], out_h_w[1]))
+            input = self.same_padding(input, filter_size)
+
+        # every channel from input layer
+        for ch in range(np.shape(input)[0]):
+            # height
+            for h in range(np.shape(output)[1]):
+                # width
+                for w in range(np.shape(output)[2]):
+                    output[:, h, w] += np.sum(input[ch, :, h: h + filter_size, w: w + filter_size] * filter, axis=(1, 2))
+            
+        return output
+    
+    def same_padding(self, input, filter_size):
+        if  filter_size % 2 != 0:
+            pad_left = (filter_size - 1) // 2
+            pad_right = (filter_size - 1) // 2
+        else:
+            pad_left = filter_size // 2
+            pad_right = filter_size // 2 + 1
+        return np.pad(input, ((0, 0), (0, 0), (pad_left, pad_right), (pad_left, pad_right)), mode='constant')
+
+
+
 
 class Activations:
 
@@ -163,8 +267,8 @@ if __name__ == '__main__':
         test_folder, 162, (16, 16), class_num=class_num)
     valid_x, valid_y = valid_data_gen.load_data()
 
-    conv_1 = Conv1D(5, 2, 'same', 2, 'sigmoid')
-    conv_2 = Conv1D(5, 4, 'same', 2, 'sigmoid')
+    conv_1 = Conv1D(3, 2, 'same', 1, 'sigmoid')
+    conv_2 = Conv1D(3, 2, 'same', 1, 'sigmoid')
     # fc_1 = FC(nodes=12, activation='sigmoid')
     fc_2 = FC(nodes=10, activation='sigmoid')
 
