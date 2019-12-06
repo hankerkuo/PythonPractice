@@ -3,6 +3,7 @@ import numpy as np
 import sys
 
 sys.path.append('C:\github_projects\PythonPractice\simple_CNN')
+sys.path.append('C:\GithubProject\PythonPractice\simple_CNN')
 
 from layer import Conv2D, FC
 from datagen import DataGenerator
