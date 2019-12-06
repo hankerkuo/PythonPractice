@@ -167,6 +167,8 @@ class Conv2D:
         delta = np.empty((self.channels, self.batch, self.out_h_w[0], self.out_h_w[1]))
         gradient_w = np.zeros((self.channels, self.batch, self.filter_size, self.filter_size))
 
+        delta_return = []
+
         # each channel
         for i, z in enumerate(self.z):
             deri_a_wrt_z = getattr(Activations(), self.activation + '_derivative')(z)
@@ -176,20 +178,30 @@ class Conv2D:
                 delta[i] = np.reshape(np.matmul(w_next.T, np.expand_dims(delta_nextlayer, axis=2)), 
                                         (self.batch, self.out_h_w[0], self.out_h_w[1])) * deri_a_wrt_z
 
+            elif next_layer == 'Conv2D':
+                w_delta = np.zeros((self.batch, self.out_h_w[0], self.out_h_w[1]))
+                w_delta = self.conv_operation(delta_nextlayer, np.rot90(w_nextlayer, k=2, axes=(1, 2)), 
+                                                        1, 'same', mode='channel_filter')
+                delta[i] = w_delta * deri_a_wrt_z
+
             delta_put_zeros = self.put_zeros(delta[i], self.stride)
-            gradient_w[i] += self.conv_operation(self.a_previous, delta_put_zeros, 1, padding='valid', batch_filter=True)
+            # delta_return.append(delta_put_zeros[:, :-1, :-1])
+            delta_return.append(delta_put_zeros[:, :-(self.stride - 1), :-(self.stride - 1)])
+            gradient_w[i] += self.conv_operation(self.a_previous, delta_put_zeros, 1, padding='valid', mode='batch_filter')
 
             self.w[i] -= 0.1 * np.average(gradient_w[i], axis=0)
             self.b[i] -= 0.1 * np.average(delta[i])
 
-        return self.w, delta
+        return self.w, delta_return
 
     '''
     conv operation , output the conv result for a single output channel
     conv operation revceives 4-dimension data [channels, batch, height, width]
     batch_filter means to calculate every batch of sample with different filter, now used for back prop calculating ∂C/∂W
     '''
-    def conv_operation(self, input, filter, stride, padding, batch_filter=False):
+    def conv_operation(self, input, filter, stride, padding, mode='normal'):
+        assert mode in ['normal', 'batch_filter', 'channel_filter'], 'mode not supported!'
+
         # only support for square filter
         filter_size = np.shape(filter)[-1]
 
@@ -201,7 +213,7 @@ class Conv2D:
         elif padding == 'valid':
             pass
 
-        if not batch_filter:
+        if mode == 'normal':
             # every channel from input layer
             for ch in range(np.shape(input)[0]):
                 # height
@@ -210,15 +222,22 @@ class Conv2D:
                     for w in range(np.shape(output)[2]):
                         output[:, h, w] += np.sum(input[ch, :, h * stride: h * stride + filter_size, 
                                                                w * stride: w * stride + filter_size] * filter, axis=(1, 2))
-        if batch_filter:
-            assert np.shape(input)[1] == np.shape(filter)[0], 'input batch size and filter batch size not consistent!'
+        if mode == 'batch_filter' or 'channel_filter':
             for ch in range(np.shape(input)[0]):
                 for h in range(np.shape(output)[1]):
                     for w in range(np.shape(output)[2]):
                         # use different filter at each batch
                         for b in range(np.shape(filter)[0]):
-                            output[b, h, w] += np.sum(input[ch, b, h * stride: h * stride + filter_size, 
-                                                                   w * stride: w * stride + filter_size] * filter[b])
+                            if mode == 'batch_filter':
+                                assert np.shape(input)[1] == np.shape(filter)[0], \
+                                'input batch size and filter batch size not consistent!'
+                                output[b, h, w] += np.sum(input[ch, b, h * stride: h * stride + filter_size, 
+                                                                    w * stride: w * stride + filter_size] * filter[b])
+                            elif mode == 'channel_filter':
+                                assert np.shape(input)[0] == np.shape(filter)[0], \
+                                'input channel size and filter channel size not consistent!'
+                                output[b, h, w] += np.sum(input[ch, b, h * stride: h * stride + filter_size, 
+                                                                    w * stride: w * stride + filter_size] * filter[ch])
         return output
     
     def same_padding(self, input, filter_size):
@@ -233,7 +252,7 @@ class Conv2D:
     # input is (batch, size_h, size_w)
     # used in multiplication between (forward part of BP, backward part of BP)
     # check my CNN derivation for details 
-    def put_zeros(self, input, stride):
+    def put_zeros(self, input, stride, del_last_ele=False):
         if stride == 1:
             return input
         input_shape = np.shape(input)
@@ -241,9 +260,11 @@ class Conv2D:
         for h in range(input_shape[1]):
             for w in range(input_shape[2]):
                 np.put(output[:], [h * stride, w * stride], input[:, h, w])
-        return output
 
-
+        if del_last_ele:
+            return output[:, :-1, :-1]
+        else:
+            return output
 
 
 class Activations:
@@ -271,6 +292,7 @@ class Loss:
 
 
 if __name__ == '__main__':
+
     if platform.system() == 'Windows':
         folder = 'C:/data/train_data'
         test_folder = 'C:/data/test_data'
@@ -287,7 +309,7 @@ if __name__ == '__main__':
         test_folder, 162, (16, 16), class_num=class_num)
     valid_x, valid_y = valid_data_gen.load_data()
 
-    conv_1 = Conv2D(filter_size=3, channels=2, padding='same', stride=2, activation='sigmoid')
+    conv_1 = Conv2D(filter_size=3, channels=4, padding='same', stride=2, activation='sigmoid')
     fc_1 = FC(nodes=10, activation='sigmoid')
 
     def forward(x):
@@ -296,7 +318,6 @@ if __name__ == '__main__':
         x = np.swapaxes(x, 0, 1) # swap channel and batch
         x = np.reshape(x, (np.shape(x)[0], -1)) # flatten for feeding into FC
         x = fc_1.forward_prop(x)
-
         return x
 
     for i in range(1000000):
