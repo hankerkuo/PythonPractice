@@ -50,7 +50,7 @@ def test_put_zeros():
 def test_CNN_2D_with_CNN_2D():
     fc_layer = FC(10, 'sigmoid')
     conv_1 = Conv2D(filter_size=3, channels=2, padding='same', stride=1, activation='sigmoid')
-    conv_2 = Conv2D(filter_size=3, channels=2, padding='same', stride=1, activation='sigmoid')
+    conv_2 = Conv2D(filter_size=5, channels=4, padding='same', stride=2, activation='sigmoid')
 
     x, y = data_generator.load_data()
     x = np.expand_dims(x, 0)  # the data is 1-channel, add the channel to the first axis
