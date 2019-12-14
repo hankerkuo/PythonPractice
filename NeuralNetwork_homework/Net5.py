@@ -3,13 +3,13 @@ from six.moves import cPickle as pickle
 import time
 import filters
 
-with open('./train_data/data.pickle', 'rb') as f:
+with open('C:/data/train_data/data.pickle', 'rb') as f:
     tr_dat = pickle.load(f)
-with open('./train_data/label.pickle', 'rb') as f:
+with open('C:/data/train_data/label.pickle', 'rb') as f:
     tr_lab = pickle.load(f)
-with open('./test_data/data.pickle', 'rb') as f:
+with open('C:/data/test_data/data.pickle', 'rb') as f:
     te_dat = pickle.load(f)
-with open('./test_data/label.pickle', 'rb') as f:
+with open('C:/data/test_data/label.pickle', 'rb') as f:
     te_lab = pickle.load(f)
 
 def sigmoid(x):
