@@ -484,7 +484,7 @@ if __name__ == '__main__':
 
     conv_1 = Conv2D(filter_size=3, channels=2, padding='same', stride=2, activation='relu')
     conv_2 = Conv2D(filter_size=3, channels=4, padding='same', stride=2, activation='relu')
-    # conv_3 = Conv2D(filter_size=3, channels=4, padding='same', stride=1, activation='relu')
+    # conv_3 = Conv2D(filter_size=3, channels=6, padding='same', stride=2, activation='relu')
     fc_1 = FC(nodes=10, activation='sigmoid')
     fc_2 = FC(nodes=12, activation='relu')
 
