@@ -21,24 +21,23 @@ elif platform.system() == 'Linux':
     folder = '/home/shaoheng/Documents/PythonPractice/handwritedigit'
 
 data_generator = DataGenerator(
-    folder, 20, (16, 16), class_num=10)
+    folder, 10, (16, 16), class_num=10)
 
 def test_CNN_2D_with_FC():
     fc_layer = FC(10, 'sigmoid')
     conv = Conv2D(filter_size=3, channels=2, padding='same', stride=1, activation='sigmoid')
 
     x, y = data_generator.load_data()
-    x = np.expand_dims(x, 0)  # the data is 1-channel, add the channel to the first axis
+    x = np.expand_dims(x, -1)  # the data is 1-channel, add the channel to the last axis
 
     x = conv.forward_prop(x)
-    x = np.swapaxes(x, 0, 1) # swap channel and batch
     x = np.reshape(x, (np.shape(x)[0], -1))
     x = fc_layer.forward_prop(x)
 
     w, delta = fc_layer.back_prop(label=y)
     w, delta = conv.back_prop(w_nextlayer=w, delta_nextlayer=delta, next_layer='FC')
     
-    assert x.shape == (20, 10)
+    assert x.shape == (10, 10)
 
 def test_put_zeros():
     matrix = np.arange(18).reshape((2, 3, 3))
@@ -54,11 +53,11 @@ def test_CNN_2D_with_CNN_2D():
     conv_2 = Conv2D(filter_size=5, channels=4, padding='same', stride=2, activation='sigmoid')
 
     x, y = data_generator.load_data()
-    x = np.expand_dims(x, 0)  # the data is 1-channel, add the channel to the first axis
+    x = np.expand_dims(x, -1)  # the data is 1-channel, add the channel to the last axis
 
     x = conv_1.forward_prop(x)
     x = conv_2.forward_prop(x)
-    x = np.swapaxes(x, 0, 1) # swap channel and batch
+
     x = np.reshape(x, (np.shape(x)[0], -1))
     x = fc_layer.forward_prop(x)
 
@@ -66,7 +65,7 @@ def test_CNN_2D_with_CNN_2D():
     w, delta = conv_2.back_prop(w_nextlayer=w, delta_nextlayer=delta, next_layer='FC')
     w, delta = conv_1.back_prop(w_nextlayer=w, delta_nextlayer=delta, next_layer='Conv2D')
     
-    assert x.shape == (20, 10)
+    assert x.shape == (10, 10)
 
 
 def test_relu_activation():
