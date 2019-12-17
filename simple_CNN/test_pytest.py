@@ -5,7 +5,7 @@ import sys
 sys.path.append('C:\github_projects\PythonPractice\simple_CNN')
 sys.path.append('C:\GithubProject\PythonPractice\simple_CNN')
 
-from layer import Conv2D, FC
+from layer import Conv2D, FC, Activations
 from datagen import DataGenerator
 
 
@@ -44,6 +44,7 @@ def test_put_zeros():
     matrix = np.arange(18).reshape((2, 3, 3))
     conv = Conv2D(filter_size=3, channels=2, padding='same', stride=2, activation='sigmoid')
     matrix = conv.put_zeros(matrix, 2, del_last_ele=True)
+    print(matrix)
     assert matrix.shape == (2, 5, 5)
 
 
@@ -66,3 +67,17 @@ def test_CNN_2D_with_CNN_2D():
     w, delta = conv_1.back_prop(w_nextlayer=w, delta_nextlayer=delta, next_layer='Conv2D')
     
     assert x.shape == (20, 10)
+
+
+def test_relu_activation():
+    matrix = np.arange(9).reshape((3, 3)) - 5
+    relu = Activations().relu
+    relu_deri = Activations().relu_derivative
+    matrix_after_relu = relu(matrix)
+    print(matrix_after_relu)
+    matrix_relu_deri = relu_deri(matrix)
+    print(matrix_relu_deri)
+    assert matrix_after_relu.shape == (3, 3)
+    
+if __name__ == '__main__':
+    test_relu_activation()
