@@ -47,28 +47,42 @@ def minimize():
     mouse.move(460, 1425, absolute=True, duration=0.01)
     mouse.click()
 
-
-# press right shift to turn on and turn off
-while 1:
-    # TURN ON, block until scroll lock(70) has been stroked
-    keyboard.wait(70)
+def activate_hotkeys():
     keyboard.add_hotkey('~', lambda: one_key_water('1, 3, 4, 5'))
     keyboard.add_hotkey('w', lambda: denote_mine())
     keyboard.add_hotkey('F2', lambda: minimize())
     keyboard.add_hotkey('f', lambda: hit_home_scroll())
     # keyboard.add_hotkey('ctrl+~', lambda: sell_item())
-    frequency = 2000  # Set Frequency To 2000 Hertz
-    duration = 100  # Set Duration, 1000 ms == 1 second
-    for i in range(3):
-        winsound.Beep(frequency, duration)
 
-    # TURN OFF, block until scroll lock(70) has been stroked
-    keyboard.wait(70)
+def deactivate_hotkeys():
     keyboard.remove_hotkey('~')
     keyboard.remove_hotkey('w')
     keyboard.remove_hotkey('F2')
     keyboard.remove_hotkey('f')
     # keyboard.remove_hotkey('ctrl+~')
+
+@check_POE_in_current
+def enter_temp_stop():
+    deactivate_hotkeys()
+    # restart when the mouse button is stroken
+    mouse.wait()
+    activate_hotkeys()
+
+# press right shift to turn on and turn off
+# key table -> https://minecraft.gamepedia.com/Key_codes
+while 1:
+    # TURN ON, block until scroll lock(70) has been stroked
+    keyboard.wait(70)
+    activate_hotkeys()
+    frequency = 2000  # Set Frequency To 2000 Hertz
+    duration = 100  # Set Duration, 1000 ms == 1 second
+    for i in range(3):
+        winsound.Beep(frequency, duration)
+    keyboard.add_hotkey('enter', lambda: enter_temp_stop())
+
+    # TURN OFF, block until scroll lock(70) has been stroked
+    keyboard.wait(70)
+    keyboard.unhook_all_hotkeys()
     frequency = 2000
     duration = 1000
     winsound.Beep(frequency, duration)
