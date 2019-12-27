@@ -1,0 +1,6 @@
+# HOTKEY for mine 
+# Example: keyboard_16, keyboard_17, mouse_right, mouse_middle...
+mouse_left
+
+# HOTKEY for flasks and using which flasks
+keyboard_41, 12345
