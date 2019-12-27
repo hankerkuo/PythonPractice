@@ -2,6 +2,7 @@ import numpy as np
 import platform
 
 from collections import deque
+from os.path import join
 
 from datagen import DataGenerator
 
@@ -166,7 +167,7 @@ class Conv2D:
 
         # each channel
         for i, w in enumerate(self.w):
-            self.z[:, :, :, i] = self.conv_operation(input, w, stride=self.stride, padding=self.padding)
+            self.z[..., i] = self.conv_operation(input, w, stride=self.stride, padding=self.padding)
         
         self.a = getattr(Activations(), self.activation)(self.z)
 
@@ -203,8 +204,8 @@ class Conv2D:
             gradient_w[:, i] += self.conv_operation(self.a_previous, delta_put_zeros, 1, 
                                 padding='valid', mode='batch_filter')
 
-            self.w[i] -= 0.01 * np.average(gradient_w[:, i], axis=0)
-            self.b[i] -= 0.01 * np.average(delta[..., i])
+            self.w[i] = self.w[i] - 0.01 * np.average(gradient_w[:, i], axis=0)
+            self.b[i] = self.b[i] - 0.01 * np.average(delta[..., i])
 
         return self.w, np.array(delta_return)
 
@@ -241,7 +242,7 @@ class Conv2D:
                     elif mode in ['channel']:
                         for ch in range(np.shape(input)[3]):
                             output[:, h, w] += np.sum(input[:, h * stride: h * stride + filter_size, 
-                                                          w * stride: w * stride + filter_size, ch] * filter[ch], axis=(1, 2))
+                                                            w * stride: w * stride + filter_size, ch] * filter[ch], axis=(1, 2))
 
         if mode == 'batch_filter':
             output = np.zeros((np.shape(input)[0], out_h_w[0], out_h_w[1], np.shape(input)[3]))
@@ -328,7 +329,7 @@ if __name__ == '__main__':
     elif platform.system() == 'Linux':
         folder = '/home/shaoheng/Documents/PythonPractice/handwritedigit'
 
-    batch = 10
+    batch = 32
     class_num = 10
 
     data_generator = DataGenerator(
@@ -342,18 +343,6 @@ if __name__ == '__main__':
         folder, 320, (16, 16), class_num=class_num)
     train_full_x, train_full_y = train_data_gen.load_data()
 
-    conv_1 = Conv2D(filter_size=3, channels=2, padding='same', stride=2, activation='relu')
-    conv_2 = Conv2D(filter_size=3, channels=2, padding='same', stride=2, activation='relu')
-    conv_3 = Conv2D(filter_size=3, channels=6, padding='same', stride=2, activation='relu')
-    fc_1 = FC(nodes=10, activation='sigmoid')
-    fc_2 = FC(nodes=12, activation='sigmoid')
-    fc_3 = FC(nodes=20, activation='sigmoid')
-
-    model = []
-    model.append(conv_1)
-    model.append(conv_2)
-    model.append(conv_3)
-    model.append(fc_1)
 
     def forward(x):
         for deep, now_layer in enumerate(model):
@@ -381,30 +370,46 @@ if __name__ == '__main__':
             output[b, argmax[b]] = 1
         return output
 
-    for i in range(1000000):
+    for time in range(100):
 
-        x, y = data_generator.load_data()
+        conv_1 = Conv2D(filter_size=3, channels=2, padding='same', stride=2, activation='relu')
+        conv_2 = Conv2D(filter_size=3, channels=4, padding='same', stride=2, activation='relu')
+        conv_3 = Conv2D(filter_size=3, channels=4, padding='same', stride=2, activation='relu')
+        fc_1 = FC(nodes=10, activation='sigmoid')
+        fc_2 = FC(nodes=12, activation='sigmoid')
+        fc_3 = FC(nodes=20, activation='sigmoid')
+        model = []
+        # model.append(conv_1)
+        # model.append(conv_2)
+        model.append(fc_1)
 
-        # forward
-        forward(x)
+        for i in range(20000):
 
-        # backward
-        backward(y)
+            x, y = data_generator.load_data()
 
-        # overfitting and loss checking part
-        if (i + 1) % 10 == 0: 
-            prediction = forward(train_full_x)
-            loss = np.sum(Loss().MSE(train_full_y, prediction))
-            prediction = batch_argmax(prediction)
-            acc = np.sum(prediction * train_full_y) / np.shape(prediction)[0]
-            print('ite:{}, train_acc={}, loss={}'.format((i + 1), acc, loss)) 
+            # forward
+            forward(x)
 
-        # validation
-        if (i + 1) % 10 == 0:
-            prediction = forward(valid_x)
-            prediction = batch_argmax(prediction)
-            acc = np.sum(prediction * valid_y) / np.shape(prediction)[0]
-            print('ite:{}, valid_acc={} \n'.format((i + 1), acc)) 
-            # print(fc_1.a)
+            # backward
+            backward(y)
+
+            # overfitting and loss checking part
+            if (i + 1) % 10 == 0: 
+                prediction = forward(train_full_x)
+                loss = np.sum(Loss().MSE(train_full_y, prediction))
+                prediction = batch_argmax(prediction)
+                train_acc = np.sum(prediction * train_full_y) / np.shape(prediction)[0]
+                print('ite:{}, train_acc={}, loss={}'.format((i + 1), train_acc, loss)) 
+
+            # validation
+                prediction = forward(valid_x)
+                prediction = batch_argmax(prediction)
+                valid_acc = np.sum(prediction * valid_y) / np.shape(prediction)[0]
+                print('ite:{}, valid_acc={} \n'.format((i + 1), valid_acc)) 
+                # print(fc_1.a)
+        
+        # record_file = open(join('C:/github_projects/PythonPractice/simple_CNN/record/1217CNN', '{}.txt'.format(time)), 'a+')
+        # record_file.write('train_acc:{}, valid_acc:{}, loss:{}\n'.format(train_acc, valid_acc, loss))
+        # record_file.close()
 
 
