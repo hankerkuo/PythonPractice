@@ -10,6 +10,7 @@ from mouse import LEFT, RIGHT, MIDDLE, UP, X, X2, DOWN, DOUBLE
 def check_POE_in_current(func):
     def checking(*args):
         if GetWindowText(GetForegroundWindow()) == 'Path of Exile':
+        # if GetWindowText(GetForegroundWindow()) == 'configs.txt - 記事本':
         # if 1:
             func(*args)
         else:
