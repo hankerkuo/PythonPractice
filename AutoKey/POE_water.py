@@ -7,7 +7,8 @@ from win32gui import GetWindowText, GetForegroundWindow
 
 def check_POE_in_current(func):
     def checking(*args):
-        if GetWindowText(GetForegroundWindow()) == 'Path of Exile':
+        # if GetWindowText(GetForegroundWindow()) == 'Path of Exile':
+        if 1:
             func(*args)
         else:
             pass
