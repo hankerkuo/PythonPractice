@@ -19,7 +19,8 @@ def check_POE_in_current(func):
 
 @check_POE_in_current
 def one_key_water(keys):
-    keyboard.press_and_release(keys)
+    for key in keys:
+        keyboard.press_and_release(key)
 
 @check_POE_in_current
 def denote_mine():
@@ -133,10 +134,10 @@ flask_hotkey = define_keyboard_mouse(flask_key)
 
 # flasks_use = input('Enter your auto flask: ')
 
-flask_seq = []
-for flask in flasks_use:
-    flask_seq.append(flask)
-flasks_use = ','.join(flask_seq)
+# flask_seq = []
+# for flask in flasks_use:
+#     flask_seq.append(flask)
+# flasks_use = ','.join(flask_seq)
 
 def main_thread():
     activate_hotkeys(mine_hotkey, flask_hotkey, flasks_use)
