@@ -4,12 +4,14 @@ import mouse
 import time
 import threading
 
-from win32gui import GetWindowText, GetForegroundWindow
+from win32gui import GetWindowText, GetForegroundWindow, GetWindow, SetForegroundWindow
+from win32api import PostMessage, SendMessage
+from win32con import WM_CHAR, WM_KEYDOWN, GW_CHILD
 
 def check_POE_in_current(func):
     def checking(*args):
-        # if GetWindowText(GetForegroundWindow()) == 'Path of Exile':
-        if 1:
+        if GetWindowText(GetForegroundWindow()) == 'Path of Exile':
+        # if 1:
             func(*args)
         else:
             pass
@@ -55,20 +57,20 @@ def logout():
     mouse.move(1718, 623, absolute=True, duration=0.01)
 
 def activate_hotkeys():
-    keyboard.add_hotkey('~', lambda: one_key_water('1, 3, 4, 5'))
-    keyboard.add_hotkey('w', lambda: denote_mine())
-    keyboard.add_hotkey('F2', lambda: minimize())
-    keyboard.add_hotkey('F3', lambda: logout())
-    keyboard.add_hotkey('f', lambda: hit_home_scroll())
+    keyboard.add_hotkey('~', lambda: one_key_water('2, 3, 4, 5'))
+    # keyboard.add_hotkey('w', lambda: denote_mine())
+    # keyboard.add_hotkey('F2', lambda: minimize())
+    # keyboard.add_hotkey('F3', lambda: logout())
+    # keyboard.add_hotkey('f', lambda: hit_home_scroll())
     # keyboard.add_hotkey('ctrl+Q', lambda: send_message_to_different_channels())
     # keyboard.add_hotkey('ctrl+~', lambda: sell_item())
 
 def deactivate_hotkeys():
     keyboard.remove_hotkey('~')
-    keyboard.remove_hotkey('w')
-    keyboard.remove_hotkey('F2')
-    keyboard.remove_hotkey('F3')
-    keyboard.remove_hotkey('f')
+    # keyboard.remove_hotkey('w')
+    # keyboard.remove_hotkey('F2')
+    # keyboard.remove_hotkey('F3')
+    # keyboard.remove_hotkey('f')
     # keyboard.remove_hotkey('ctrl+Q')
     # keyboard.remove_hotkey('ctrl+~')
 
@@ -96,22 +98,14 @@ def send_message_to_different_channels():
 def functional_hot_keys():
     # press right shift to turn on and turn off
     # key table -> https://minecraft.gamepedia.com/Key_codes
-    while 1:
-        # TURN ON, block until scroll lock(70) has been stroked
-        keyboard.wait(70)
-        activate_hotkeys()
-        frequency = 2000  # Set Frequency To 2000 Hertz
-        duration = 100  # Set Duration, 1000 ms == 1 second
-        for i in range(3):
-            winsound.Beep(frequency, duration)
-        keyboard.add_hotkey('enter', lambda: enter_temp_stop())
 
-        # TURN OFF, block until scroll lock(70) has been stroked
-        keyboard.wait(70)
-        keyboard.unhook_all_hotkeys()
-        frequency = 2000
-        duration = 1000
+    activate_hotkeys()
+    frequency = 2000  # Set Frequency To 2000 Hertz
+    duration = 100  # Set Duration, 1000 ms == 1 second
+    for i in range(3):
         winsound.Beep(frequency, duration)
+    keyboard.add_hotkey('enter', lambda: enter_temp_stop())
+
 
 def mouse_lefts(hold='ctrl', on_off_key=62):
     # key_code for continuously pressing, 42 for shift, 29 for control
@@ -139,15 +133,93 @@ def mouse_lefts(hold='ctrl', on_off_key=62):
         winsound.Beep(frequency, duration)
         keyboard.release(key_code)
 
+def key_stroke_in_BG(on_off_key=64):
+    # F6(64)
+    while 1:
+        keyboard.wait(on_off_key)
 
+        frequency = 2000  # Set Frequency To 2000 Hertz
+        duration = 100  # Set Duration, 1000 ms == 1 second
+        for i in range(2):
+            winsound.Beep(frequency, duration)
+
+        hwnd_current = GetForegroundWindow()
+        hwndChild = GetWindow(hwnd_current, GW_CHILD)
+        while 1:
+            # SetForegroundWindow(hwnd_current)
+            if keyboard.is_pressed(on_off_key):
+                break
+            # print(win32gui.GetForegroundWindow())
+            # PostMessage(hwndChild, WM_KEYDOWN, ord('E'), 0)
+            # SendMessage(hwndChild, WM_KEYDOWN, ord('E'), 0)
+            SendMessage(hwnd_current, WM_CHAR, ord('e'), 0 + (0 << 8) + (ord('e') << 16) + (0 << 24))
+            # keyboard.press_and_release('e')
+            time.sleep(0.05)
+
+        frequency = 2000
+        duration = 100
+        winsound.Beep(frequency, duration)
+    
+def stationary_cyclone(on_off_key=64):
+    while 1:
+        # F6 (64) for starting the process
+        keyboard.wait(on_off_key)
+        mouse_position = mouse.get_position()
+        frequency = 2000  # Set Frequency To 2000 Hertz
+        duration = 100  # Set Duration, 1000 ms == 1 second
+        for i in range(2):
+            winsound.Beep(frequency, duration)
+        
+        # 18 for key:e
+        keyboard.press(18)
+
+        while 1:
+            # print(keyboard.is_pressed(18))
+            if keyboard.is_pressed(on_off_key):
+                break
+            # time.sleep(0.001)
+            mouse.move(*mouse_position)
+
+        frequency = 2000
+        duration = 100
+        winsound.Beep(frequency, duration)
+        keyboard.release(18)
+
+def flask_every_five_sec(on_off_key=65):
+    while 1:
+        keyboard.wait(on_off_key)
+        frequency = 2000  # Set Frequency To 2000 Hertz
+        duration = 100  # Set Duration, 1000 ms == 1 second
+        for i in range(2):
+            winsound.Beep(frequency, duration)
+
+        time_count = 0.9
+        while 1:
+            if keyboard.is_pressed(on_off_key):
+                break
+            if int(time_count) % 5 == 0:
+                keyboard.press_and_release('1, 2, 3, 4, 5')
+                time_count = 0.9
+            time.sleep(0.1)
+            time_count += 0.1
+
+        frequency = 2000
+        duration = 100
+        winsound.Beep(frequency, duration)
 
 if __name__ == '__main__':
     hot_key = threading.Thread(target=functional_hot_keys, daemon=True)
     ctrl_mouse_leftstriking = threading.Thread(target=mouse_lefts, kwargs={'hold': 'ctrl', 'on_off_key': 62}, daemon=True)
     shift_mouse_leftstriking = threading.Thread(target=mouse_lefts, kwargs={'hold': 'shift', 'on_off_key': 63}, daemon=True)
+    station_cyclone = threading.Thread(target=stationary_cyclone, kwargs={'on_off_key': 64}, daemon=True)
+    auto_flask = threading.Thread(target=flask_every_five_sec, kwargs={'on_off_key': 65}, daemon=True)
+
     hot_key.start()
     ctrl_mouse_leftstriking.start()
     shift_mouse_leftstriking.start()
+    station_cyclone.start()
+    auto_flask.start()
+
     print('POE macro running ...')
     while 1:
         time.sleep(10)
