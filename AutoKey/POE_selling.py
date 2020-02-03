@@ -2,6 +2,7 @@ import mouse
 import time
 import keyboard
 
+'''
 while 1:
     # scroll lock for starting the process
     keyboard.wait(70)
@@ -12,6 +13,8 @@ while 1:
             time.sleep(0.02)
             mouse.click()
     keyboard.release(29)
+'''
 
-# time.sleep(0.5)
-# print(mouse.get_position())
+while 1:
+    time.sleep(0.5)
+    print(mouse.get_position())
